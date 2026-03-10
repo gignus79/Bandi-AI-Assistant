@@ -143,10 +143,6 @@ export default function PricingPage() {
           </button>
         </div>
       </div>
-      <p className="text-xs text-muted-foreground">
-        Configura STRIPE_PRO_PRICE_ID e STRIPE_UNLIMITED_PRICE_ID in Stripe Dashboard
-        (Prodotti e prezzi) e nelle variabili d’ambiente per abilitare i pulsanti.
-      </p>
     </div>
   );
 }

@@ -18,14 +18,20 @@ export const PLANS = {
     analysesPerMonth: 15,
     messagesPerMonth: 150,
     messagesTotal: null as number | null,
-    priceId: process.env.STRIPE_PRO_PRICE_ID ?? "",
+    priceId:
+      process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID ??
+      process.env.STRIPE_PRO_PRICE_ID ??
+      "",
   },
   unlimited: {
     name: "Unlimited",
     analysesPerMonth: -1,
     messagesPerMonth: 400,
     messagesTotal: null as number | null,
-    priceId: process.env.STRIPE_UNLIMITED_PRICE_ID ?? "",
+    priceId:
+      process.env.NEXT_PUBLIC_STRIPE_UNLIMITED_PRICE_ID ??
+      process.env.STRIPE_UNLIMITED_PRICE_ID ??
+      "",
   },
 } as const;
 
