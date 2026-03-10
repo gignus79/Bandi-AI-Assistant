@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { Suspense, useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Check, Loader2 } from "lucide-react";
 import { PLANS } from "@/lib/stripe";
@@ -15,7 +15,7 @@ interface UsageState {
   messagesLimit?: number | null;
 }
 
-export default function PricingPage() {
+function PricingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [usage, setUsage] = useState<UsageState | null>(null);
@@ -189,5 +189,13 @@ export default function PricingPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PricingPage() {
+  return (
+    <Suspense fallback={<p className="text-muted-foreground">Caricamento...</p>}>
+      <PricingContent />
+    </Suspense>
   );
 }

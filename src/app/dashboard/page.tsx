@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { Suspense, useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PlusCircle } from "lucide-react";
@@ -14,7 +14,7 @@ interface Bando {
 
 const USAGE_UPDATED_EVENT = "usage-updated";
 
-export default function DashboardPage() {
+function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [bandi, setBandi] = useState<Bando[]>([]);
@@ -157,5 +157,13 @@ export default function DashboardPage() {
         </ul>
       )}
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="space-y-8 p-4 text-muted-foreground">Caricamento...</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }
