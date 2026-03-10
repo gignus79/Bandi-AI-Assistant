@@ -33,6 +33,16 @@ export async function POST(req: NextRequest) {
     }
     const { priceId, successUrl, cancelUrl } = parsed.data;
 
+    if (priceId.startsWith("prod_")) {
+      return NextResponse.json(
+        {
+          error:
+            "Configurazione errata: hai usato l'ID prodotto (prod_...). In Stripe Dashboard, apri ogni prodotto → sezione Tariffe → clicca sul prezzo e copia l'ID prezzo (price_...). Imposta NEXT_PUBLIC_STRIPE_PRO_PRICE_ID e NEXT_PUBLIC_STRIPE_UNLIMITED_PRICE_ID con questi ID su Vercel.",
+        },
+        { status: 400 }
+      );
+    }
+
     const validPriceIds = [PLANS.pro.priceId, PLANS.unlimited.priceId].filter(
       Boolean
     );

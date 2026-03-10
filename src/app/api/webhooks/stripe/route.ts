@@ -34,24 +34,51 @@ export async function POST(req: NextRequest) {
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
-      const userId = session.client_reference_id ?? session.subscription
-        ? (await stripe.subscriptions.retrieve(session.subscription as string))
-            .metadata?.userId
-        : null;
+      const userId =
+        session.client_reference_id ??
+        (session.subscription
+          ? (
+              await stripe.subscriptions.retrieve(
+                session.subscription as string
+              )
+            ).metadata?.userId
+          : null);
       if (!userId) break;
       const subId = session.subscription as string;
       if (!subId) break;
       const sub = await stripe.subscriptions.retrieve(subId);
       const priceId = sub.items.data[0]?.price?.id ?? null;
-      await db.insert(subscriptions).values({
+      const status = sub.status as
+        | "active"
+        | "canceled"
+        | "past_due"
+        | "trialing";
+      const existing = await db
+        .select()
+        .from(subscriptions)
+        .where(eq(subscriptions.stripeSubscriptionId, sub.id))
+        .limit(1);
+      const payload = {
         userId,
         stripeCustomerId: session.customer as string | null,
         stripeSubscriptionId: sub.id,
         stripePriceId: priceId,
-        status: sub.status as "active" | "canceled" | "past_due" | "trialing",
+        status,
         currentPeriodStart: new Date((sub.current_period_start ?? 0) * 1000),
         currentPeriodEnd: new Date((sub.current_period_end ?? 0) * 1000),
-      });
+        updatedAt: new Date(),
+      };
+      if (existing.length > 0) {
+        await db
+          .update(subscriptions)
+          .set(payload)
+          .where(eq(subscriptions.id, existing[0].id));
+      } else {
+        await db.insert(subscriptions).values({
+          ...payload,
+          createdAt: new Date(),
+        });
+      }
       break;
     }
     case "customer.subscription.updated": {

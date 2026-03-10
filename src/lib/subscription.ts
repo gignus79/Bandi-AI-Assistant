@@ -12,7 +12,8 @@ export async function getPlanForUser(userId: string): Promise<PlanId> {
     .limit(1);
 
   const sub = rows[0];
-  if (!sub || sub.status !== "active") return "free";
+  const activeStatuses = ["active", "trialing"];
+  if (!sub || !activeStatuses.includes(sub.status)) return "free";
   const plan = sub.stripePriceId ? getPlanByPriceId(sub.stripePriceId) : null;
   return plan ?? "free";
 }

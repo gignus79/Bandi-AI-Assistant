@@ -15,13 +15,23 @@ interface UsageState {
 export function UsageBadge() {
   const [usage, setUsage] = useState<UsageState | null>(null);
 
-  useEffect(() => {
+  const refetch = () => {
     fetch("/api/usage")
       .then((r) => r.json())
       .then((d) => {
         if (d.used != null) setUsage(d);
       })
       .catch(() => {});
+  };
+
+  useEffect(() => {
+    refetch();
+  }, []);
+
+  useEffect(() => {
+    const onUsageUpdated = () => refetch();
+    window.addEventListener("usage-updated", onUsageUpdated);
+    return () => window.removeEventListener("usage-updated", onUsageUpdated);
   }, []);
 
   if (!usage) return null;

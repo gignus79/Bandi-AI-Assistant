@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PlusCircle } from "lucide-react";
 
 interface Bando {
@@ -12,12 +12,46 @@ interface Bando {
   createdAt: string;
 }
 
+const USAGE_UPDATED_EVENT = "usage-updated";
+
 export default function DashboardPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [bandi, setBandi] = useState<Bando[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [newTitle, setNewTitle] = useState("");
+  const pollingDone = useRef(false);
+
+  useEffect(() => {
+    if (pollingDone.current) return;
+    const success = searchParams.get("success") === "1";
+    if (!success) return;
+
+    const maxAttempts = 15;
+    const intervalMs = 2000;
+    let attempts = 0;
+
+    const poll = () => {
+      attempts += 1;
+      fetch("/api/usage")
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.plan && d.plan !== "free") {
+            pollingDone.current = true;
+            window.dispatchEvent(new CustomEvent(USAGE_UPDATED_EVENT));
+            router.replace("/dashboard", { scroll: false });
+          } else if (attempts < maxAttempts) {
+            setTimeout(poll, intervalMs);
+          }
+        })
+        .catch(() => {
+          if (attempts < maxAttempts) setTimeout(poll, intervalMs);
+        });
+    };
+
+    poll();
+  }, [searchParams, router]);
 
   useEffect(() => {
     fetch("/api/bandi")

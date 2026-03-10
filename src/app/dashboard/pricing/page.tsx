@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Check, Loader2 } from "lucide-react";
 import { PLANS } from "@/lib/stripe";
 
@@ -15,11 +16,14 @@ interface UsageState {
 }
 
 export default function PricingPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [usage, setUsage] = useState<UsageState | null>(null);
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const pollingDone = useRef(false);
 
-  useEffect(() => {
+  const refetchUsage = () => {
     fetch("/api/usage")
       .then((r) => r.json())
       .then((d) => {
@@ -27,7 +31,48 @@ export default function PricingPage() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    refetchUsage();
   }, []);
+
+  useEffect(() => {
+    const onUsageUpdated = () => refetchUsage();
+    window.addEventListener("usage-updated", onUsageUpdated);
+    return () => window.removeEventListener("usage-updated", onUsageUpdated);
+  }, []);
+
+  useEffect(() => {
+    if (pollingDone.current) return;
+    if (searchParams.get("success") !== "1") return;
+
+    const maxAttempts = 15;
+    const intervalMs = 2000;
+    let attempts = 0;
+
+    const poll = () => {
+      attempts += 1;
+      fetch("/api/usage")
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.plan && d.plan !== "free") {
+            pollingDone.current = true;
+            setUsage(d);
+            setLoading(false);
+            window.dispatchEvent(new CustomEvent("usage-updated"));
+            router.replace("/dashboard/pricing", { scroll: false });
+          } else if (attempts < maxAttempts) {
+            setTimeout(poll, intervalMs);
+          }
+        })
+        .catch(() => {
+          if (attempts < maxAttempts) setTimeout(poll, intervalMs);
+        });
+    };
+
+    poll();
+  }, [searchParams, router]);
 
   const startCheckout = async (priceId: string) => {
     if (!priceId) return;
