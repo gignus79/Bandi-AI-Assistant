@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { itIT } from "@clerk/localizations";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -24,6 +25,7 @@ export default function RootLayout({
       <html lang="it" suppressHydrationWarning>
         <body className="min-h-screen antialiased">
           <ThemeProvider>{children}</ThemeProvider>
+          <Analytics />
         </body>
       </html>
     </ClerkProvider>
