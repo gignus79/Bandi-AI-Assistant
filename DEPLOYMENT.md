@@ -42,7 +42,18 @@ Scegli un solo host e usalo ovunque: **Vercel**, **Clerk** e **NEXT_PUBLIC_APP_U
 2. **API Keys** → usa le chiavi **Production** (`pk_live_` / `sk_live_`) in Vercel (Production).
 3. **Domains** (o **Paths**): aggiungi il dominio di produzione es. `bandi.giorgiolovecchio.com` e gli URL di callback/redirect che Clerk suggerisce (in genere allineati a `NEXT_PUBLIC_APP_URL`).
 4. **Authorized redirect URLs** / **Allowed origins**: includi `https://bandi.giorgiolovecchio.com` (e le route Clerk `/sign-in`, `/sign-up` se richiesto).
-5. Il middleware dell’app usa `NEXT_PUBLIC_APP_URL` per `authorizedParties`: in produzione deve essere esattamente l’URL pubblico dell’app (senza slash finale o coerente con la config Clerk).
+5. Il middleware dell’app usa `NEXT_PUBLIC_APP_URL` per `authorizedParties`: in produzione deve essere esattamente l’URL pubblico dell’app (senza slash finale o coerente con la config Clerk). Opzionale: `NEXT_PUBLIC_CLERK_ALLOWED_ORIGINS` (origini separate da virgola) per preview Vercel o alias.
+
+### Errore: «Production Keys are only allowed for domain …» / «HTTP Origin header must be equal to or a subdomain of the requesting URL»
+
+Succede quando il browser apre l’app da un **host non registrato** nell’istanza Clerk di produzione (es. dominio `*.vercel.app` di preview mentre le chiavi `pk_live_` sono legate solo a `*.giorgiolovecchio.com`).
+
+**Cosa fare:**
+
+1. Usa in produzione **solo** l’URL pubblico previsto (es. `https://webapp.bandiassistant.giorgiolovecchio.com`) e imposta **`NEXT_PUBLIC_APP_URL`** in Vercel a quello stesso valore (nessuno slash finale).
+2. In **Clerk Dashboard → Domains / Configure**, aggiungi quel **hostname** (e ogni sottodominio da cui gli utenti accedono realmente). Senza questo, Clerk rifiuta le richieste dal frontend.
+3. Non mischiare **chiavi live** con URL di preview: per i deploy preview usa chiavi **test** (`pk_test_`) oppure aggiungi l’origine preview in Clerk e in `NEXT_PUBLIC_CLERK_ALLOWED_ORIGINS`.
+4. Verifica che non ci siano redirect tra `www` e non-`www` che cambiano l’origine rispetto a quanto configurato.
 
 ## Scraping URL (limiti)
 

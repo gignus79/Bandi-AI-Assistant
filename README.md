@@ -88,7 +88,11 @@ Se compare un errore OAuth legato a scope (`openid`, `userinfo.email`, `userinfo
 4. **Ambiente chiavi**: in locale usa le chiavi **publishable/secret** di sviluppo (`pk_test_` / `sk_test_`); in produzione le chiavi **live** (`pk_live_` / `sk_live_`). Mischio dev/prod tra URL e chiavi causa errori al login.
 5. **OAuth consent screen**: se l’app Google è in modalità *Testing*, solo gli utenti di test possono accedere; in *Production* verifica dominio e schermata di consenso.
 
-Il middleware include `authorizedParties` basato su `NEXT_PUBLIC_APP_URL`, più `http://localhost:3000` in sviluppo e l’host `VERCEL_URL` sui deploy Vercel (preview/production).
+Il middleware include `authorizedParties` basato su `NEXT_PUBLIC_APP_URL`, più `http://localhost:3000` in sviluppo, l’host `VERCEL_URL` sui deploy Vercel e, se serve, **`NEXT_PUBLIC_CLERK_ALLOWED_ORIGINS`** (lista separata da virgole).
+
+### «Production Keys are only allowed for domain …» / errore sull’header Origin
+
+L’app deve essere aperta da un **hostname** presente nella configurazione **Domains** dell’applicazione Clerk in produzione. Se usi solo `pk_live_` ma visiti un dominio non registrato (es. `*.vercel.app` senza averlo aggiunto in Clerk), il caricamento di Clerk fallisce. Aggiungi in Clerk il dominio reale degli utenti e allinea `NEXT_PUBLIC_APP_URL`. Dettagli in [`DEPLOYMENT.md`](./DEPLOYMENT.md).
 
 ---
 

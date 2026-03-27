@@ -13,6 +13,13 @@ function getAuthorizedParties(): string[] | undefined {
   const parties = new Set<string>();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
   if (appUrl) parties.add(appUrl);
+  const extraOrigins = process.env.NEXT_PUBLIC_CLERK_ALLOWED_ORIGINS;
+  if (extraOrigins) {
+    for (const part of extraOrigins.split(",")) {
+      const o = part.trim().replace(/\/$/, "");
+      if (o) parties.add(o);
+    }
+  }
   if (process.env.NODE_ENV === "development") {
     parties.add("http://localhost:3000");
   }

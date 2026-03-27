@@ -159,7 +159,7 @@ export function ChatPanel({
                   {m.role === "user" ? (
                     <div className="whitespace-pre-wrap">{m.content}</div>
                   ) : (
-                    <div className="chat-markdown prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold prose-headings:text-foreground prose-p:my-1 prose-p:text-foreground prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-strong:text-foreground prose-em:text-foreground prose-a:text-primary prose-a:underline prose-table:text-xs prose-th:bg-muted/50 prose-th:px-2 prose-th:py-1 prose-td:px-2 prose-td:py-1 prose-th:border prose-td:border">
+                    <div className="chat-markdown prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold prose-headings:text-foreground prose-h2:mt-6 prose-h2:mb-3 prose-h3:mt-5 prose-h3:mb-2 prose-h4:mt-4 prose-h4:mb-2 first:prose-headings:mt-0 prose-p:my-3 prose-p:leading-relaxed prose-p:text-foreground prose-p:first:mt-0 prose-ul:my-4 prose-ol:my-4 prose-ul:space-y-1 prose-ol:space-y-1 prose-li:my-1.5 prose-li:leading-relaxed prose-blockquote:my-4 prose-blockquote:border-l-primary prose-hr:my-8 prose-strong:text-foreground prose-em:text-foreground prose-a:text-primary prose-a:underline prose-table:my-4 prose-table:text-xs prose-th:bg-muted/50 prose-th:px-2 prose-th:py-1 prose-td:px-2 prose-td:py-1 prose-th:border prose-td:border">
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         components={{

@@ -2,16 +2,23 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import { googleDriveDirectViewUrl } from "@/lib/media-url";
 
 /**
- * Logo ufficiale: aggiungi il file originale come `public/mediamatter-logo.png` (consigliato: PNG dal brand kit).
- * Opzionale: `NEXT_PUBLIC_MEDIAMATTER_LOGO_URL` per un URL pubblico (CDN).
- * Se il caricamento fallisce, si prova un URL sul sito WordPress, poi il wordmark testuale.
+ * Logo: varianti tema
+ * - NEXT_PUBLIC_MEDIAMATTER_LOGO_URL_BLACK → sfondi chiari
+ * - NEXT_PUBLIC_MEDIAMATTER_LOGO_URL_WHITE → sfondi scuri
+ * Legacy: NEXT_PUBLIC_MEDIAMATTER_LOGO_URL, poi public/mediamatter-logo.png, poi URL WordPress, poi wordmark.
  */
 const REMOTE_LOGO_FALLBACK =
   "https://www.giorgiolovecchio.com/wp-content/uploads/elementor/thumbs/Logo_MediaMatter_300x150-rfany5j6vb0rsiwht0gezcsi5tz8l3md77iqrr52k0.png";
 
 const LOCAL_LOGO = "/mediamatter-logo.png";
+
+function envTrim(key: string): string | null {
+  const v = process.env[key];
+  return typeof v === "string" && v.trim().length > 0 ? googleDriveDirectViewUrl(v.trim()) : null;
+}
 
 type BrandLogoProps = {
   className?: string;
@@ -36,21 +43,59 @@ export function BrandLogo({
   heightClass = "h-9",
   showWordmarkFallback = true,
 }: BrandLogoProps) {
-  const envUrl =
-    typeof process.env.NEXT_PUBLIC_MEDIAMATTER_LOGO_URL === "string" &&
-    process.env.NEXT_PUBLIC_MEDIAMATTER_LOGO_URL.trim().length > 0
-      ? process.env.NEXT_PUBLIC_MEDIAMATTER_LOGO_URL.trim()
-      : null;
+  const logoBlack = envTrim("NEXT_PUBLIC_MEDIAMATTER_LOGO_URL_BLACK");
+  const logoWhite = envTrim("NEXT_PUBLIC_MEDIAMATTER_LOGO_URL_WHITE");
+  const legacyUrl = envTrim("NEXT_PUBLIC_MEDIAMATTER_LOGO_URL");
+
+  const dualMode = Boolean(logoBlack && logoWhite);
+
+  const singleFromTheme = logoBlack ?? logoWhite;
 
   const candidates = useMemo(() => {
     const list: string[] = [];
-    if (envUrl) list.push(envUrl);
+    if (legacyUrl) list.push(legacyUrl);
     list.push(LOCAL_LOGO);
     list.push(REMOTE_LOGO_FALLBACK);
     return list;
-  }, [envUrl]);
+  }, [legacyUrl]);
 
   const [index, setIndex] = useState(0);
+
+  if (dualMode) {
+    return (
+      <span className={`inline-flex items-center ${className}`}>
+        <Image
+          src={logoBlack!}
+          alt="MediaMatter"
+          width={220}
+          height={80}
+          className={`${heightClass} w-auto max-w-[220px] object-contain object-left dark:hidden`}
+          unoptimized
+        />
+        <Image
+          src={logoWhite!}
+          alt="MediaMatter"
+          width={220}
+          height={80}
+          className={`${heightClass} hidden w-auto max-w-[220px] object-contain object-left dark:block`}
+          unoptimized
+        />
+      </span>
+    );
+  }
+
+  if (!dualMode && (logoBlack || logoWhite)) {
+    return (
+      <Image
+        src={singleFromTheme!}
+        alt="MediaMatter"
+        width={220}
+        height={80}
+        className={`${heightClass} w-auto max-w-[220px] object-contain object-left ${className}`}
+        unoptimized
+      />
+    );
+  }
 
   if (index >= candidates.length) {
     return showWordmarkFallback ? (
