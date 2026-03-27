@@ -50,3 +50,15 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Chat / analisi: spazio dopo <br> generati da Markdown (LLM denso) */
+@layer components {
+  .chat-markdown.prose br {
+    display: block;
+    margin-bottom: 0.65rem;
+  }
+  .analysis-result.prose li {
+    margin-top: 0.35rem;
+    margin-bottom: 0.35rem;
+  }
+}

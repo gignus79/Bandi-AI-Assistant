@@ -5,6 +5,7 @@ import { Copy, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
+import { prepareAssistantMarkdownForDisplay } from "@/lib/chat-markdown";
 
 interface Message {
   id: string;
@@ -171,9 +172,12 @@ export function ChatPanel({
                               {children}
                             </a>
                           ),
+                          p: ({ children }) => (
+                            <p className="mb-4 mt-0 last:mb-0 leading-[1.75]">{children}</p>
+                          ),
                         }}
                       >
-                        {m.content}
+                        {prepareAssistantMarkdownForDisplay(m.content)}
                       </ReactMarkdown>
                     </div>
                   )}

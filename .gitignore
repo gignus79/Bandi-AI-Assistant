@@ -37,3 +37,6 @@ next-env.d.ts
 # drizzle
 drizzle/
 docs/
+
+# Note di deploy personali (solo locale, non in repo)
+DEPLOYMENT.md

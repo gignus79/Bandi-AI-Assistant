@@ -102,7 +102,7 @@ Il middleware include `authorizedParties` basato su `NEXT_PUBLIC_APP_URL`, più 
 
 ### «Production Keys are only allowed for domain …» / errore sull’header Origin
 
-L’app deve essere aperta da un **hostname** presente nella configurazione **Domains** dell’applicazione Clerk in produzione. Se usi solo `pk_live_` ma visiti un dominio non registrato (es. `*.vercel.app` senza averlo aggiunto in Clerk), il caricamento di Clerk fallisce. Aggiungi in Clerk il dominio reale degli utenti e allinea `NEXT_PUBLIC_APP_URL`. Dettagli in [`DEPLOYMENT.md`](./DEPLOYMENT.md).
+L’app deve essere aperta da un **hostname** presente nella configurazione **Domains** dell’applicazione Clerk in produzione. Se usi solo `pk_live_` ma visiti un dominio non registrato (es. `*.vercel.app` senza averlo aggiunto in Clerk), il caricamento di Clerk fallisce. Aggiungi in Clerk il dominio reale degli utenti e allinea `NEXT_PUBLIC_APP_URL`.
 
 ---
 
