@@ -1,8 +1,10 @@
 "use client";
 
 import { Suspense, useEffect, useState, useRef } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Check, Loader2 } from "lucide-react";
+import { Check, ExternalLink, Loader2 } from "lucide-react";
+import { bandiAppInboundLinks, crossSellApps } from "@/content/site-marketing";
 import { PLANS } from "@/lib/stripe";
 
 interface UsageState {
@@ -92,14 +94,68 @@ function PricingContent() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8">
-      <h1 className="text-2xl font-bold text-foreground">Piani e utilizzo</h1>
-      {loading ? (
-        <p className="text-muted-foreground">Caricamento...</p>
+    <div className="mx-auto max-w-4xl space-y-10">
+      <section className="rounded-2xl border border-slate-200 bg-white/95 p-6 shadow-sm dark:border-white/10 dark:bg-[#0c0818]/70">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-foreground">
+          Bandi AI Assistant — cos&apos;è
+        </h2>
+        <p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-muted-foreground">
+          Applicazione per{" "}
+          <strong className="text-slate-900 dark:text-foreground">
+            analizzare la documentazione dei bandi
+          </strong>{" "}
+          (PDF, fogli di calcolo, testo, immagini e URL): sintesi strutturate, requisiti, scadenze, criteri di
+          valutazione e suggerimenti con intelligenza artificiale. Puoi{" "}
+          <strong className="text-slate-900 dark:text-foreground">chattare in modo contestuale</strong> su ogni bando,
+          esportare in Markdown o PDF e aggiungere le scadenze al calendario (.ics). Pensata per consulenti, PM e team
+          che devono ridurre i tempi di lettura senza perdere dettaglio.
+        </p>
+        <p className="mt-3 text-sm text-slate-700 dark:text-muted-foreground">
+          <strong className="text-slate-900 dark:text-foreground">MediaMatter</strong> — Giorgio Lovecchio.{" "}
+          <Link
+            href="/dashboard"
+            className="font-medium text-violet-700 underline underline-offset-2 hover:text-violet-900 dark:text-cyan-300 dark:hover:text-cyan-200"
+          >
+            Dashboard bandi
+          </Link>
+          {" · "}
+          <a
+            href="https://www.giorgiolovecchio.com/progetti-ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-violet-700 underline underline-offset-2 hover:text-violet-900 dark:text-cyan-300 dark:hover:text-cyan-200"
+          >
+            Scheda su giorgiolovecchio.com
+            <ExternalLink className="ml-0.5 inline h-3 w-3 align-middle opacity-70" aria-hidden />
+          </a>
+        </p>
+        <ul className="mt-4 space-y-2 border-t border-slate-200/80 pt-4 dark:border-white/10">
+          {bandiAppInboundLinks.map((item) => (
+            <li key={item.href}>
+              <a
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex flex-wrap items-baseline gap-x-2 text-sm text-violet-700 hover:text-violet-900 dark:text-cyan-300 dark:hover:text-cyan-200"
+              >
+                <span className="font-medium underline decoration-violet-400/70 underline-offset-2 group-hover:decoration-violet-600 dark:decoration-cyan-500/50">
+                  {item.label}
+                </span>
+                <span className="text-slate-600 dark:text-muted-foreground">— {item.description}</span>
+                <ExternalLink className="h-3 w-3 shrink-0 opacity-60" aria-hidden />
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <h1 className="text-2xl font-bold text-slate-900 dark:text-foreground">Piani e utilizzo</h1>
+        {loading ? (
+        <p className="text-slate-600 dark:text-muted-foreground">Caricamento...</p>
       ) : usage ? (
-        <div className="rounded-lg border border-border bg-card p-4">
-          <p className="text-sm text-muted-foreground">
-            Piano attuale: <strong className="text-foreground">{usage.planName}</strong>
+        <div className="rounded-lg border border-slate-200 bg-white/90 p-4 dark:border-border dark:bg-card">
+          <p className="text-sm text-slate-700 dark:text-muted-foreground">
+            Piano attuale: <strong className="text-slate-900 dark:text-foreground">{usage.planName}</strong>
             {usage.limit != null && (
               <> · Analisi: {usage.used} / {usage.limit}</>
             )}
@@ -115,10 +171,10 @@ function PricingContent() {
       ) : null}
 
       <div className="grid gap-6 sm:grid-cols-3">
-        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-foreground">Free</h2>
-          <p className="mt-2 text-2xl font-bold text-foreground">0 €/mese</p>
-          <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-border dark:bg-card">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-foreground">Free</h2>
+          <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-foreground">0 €/mese</p>
+          <ul className="mt-4 space-y-2 text-sm text-slate-600 dark:text-muted-foreground">
             <li className="flex items-center gap-2">
               <Check className="h-4 w-4 text-primary" />
               {PLANS.free.analysesPerMonth} analisi al mese
@@ -129,10 +185,10 @@ function PricingContent() {
             </li>
           </ul>
         </div>
-        <div className="rounded-xl border border-primary/50 bg-card p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-foreground">Pro</h2>
-          <p className="mt-2 text-2xl font-bold text-foreground">~12 €/mese</p>
-          <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
+        <div className="rounded-xl border border-primary/50 bg-white p-6 shadow-sm dark:bg-card">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-foreground">Pro</h2>
+          <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-foreground">~12 €/mese</p>
+          <ul className="mt-4 space-y-2 text-sm text-slate-600 dark:text-muted-foreground">
             <li className="flex items-center gap-2">
               <Check className="h-4 w-4 text-primary" />
               {PLANS.pro.analysesPerMonth} analisi al mese
@@ -155,10 +211,10 @@ function PricingContent() {
             )}
           </button>
         </div>
-        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-foreground">Unlimited</h2>
-          <p className="mt-2 text-2xl font-bold text-foreground">~29 €/mese</p>
-          <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-border dark:bg-card">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-foreground">Unlimited</h2>
+          <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-foreground">~29 €/mese</p>
+          <ul className="mt-4 space-y-2 text-sm text-slate-600 dark:text-muted-foreground">
             <li className="flex items-center gap-2">
               <Check className="h-4 w-4 text-primary" />
               Analisi illimitate
@@ -188,6 +244,56 @@ function PricingContent() {
           </button>
         </div>
       </div>
+
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-foreground">
+            Altre applicazioni online
+          </h2>
+          <p className="mt-1 text-sm text-slate-600 dark:text-muted-foreground">
+            Dallo stesso ecosistema MediaMatter — strumenti già in produzione sul sito.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {crossSellApps.map((app) => (
+            <article
+              key={app.title}
+              className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-violet-400/50 hover:shadow-md dark:border-white/10 dark:bg-[#0c0818]/80 dark:hover:border-violet-500/30"
+            >
+              <a
+                href={app.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex flex-1 flex-col outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <span className="text-[11px] font-medium uppercase tracking-wide text-violet-600 dark:text-violet-300/90">
+                  {app.stack}
+                </span>
+                <h3 className="mt-2 text-base font-semibold text-slate-900 group-hover:text-violet-800 dark:text-foreground dark:group-hover:text-cyan-200">
+                  {app.title}
+                  <ExternalLink
+                    className="ml-1 inline h-3.5 w-3.5 opacity-50 transition group-hover:opacity-100"
+                    aria-hidden
+                  />
+                </h3>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-600 dark:text-muted-foreground">
+                  {app.tagline}
+                </p>
+              </a>
+              {app.secondaryHref && app.secondaryLabel ? (
+                <a
+                  href={app.secondaryHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 text-xs text-violet-700 underline underline-offset-2 hover:text-violet-900 dark:text-cyan-400 dark:hover:text-cyan-300"
+                >
+                  {app.secondaryLabel}
+                </a>
+              ) : null}
+            </article>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
