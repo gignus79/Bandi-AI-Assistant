@@ -10,6 +10,7 @@ import { AnalysisResult } from "@/components/analysis/AnalysisResult";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { FileTypeIcon } from "@/components/ui/FileTypeIcon";
 import { UpgradePromptModal } from "@/components/ui/UpgradePromptModal";
+import { AiDisclaimer } from "@/components/legal/AiDisclaimer";
 
 interface BandoDetail {
   bando: { id: string; title: string; description: string | null };
@@ -156,6 +157,9 @@ export default function BandoDetailPage({
         return;
       }
       if (result.id) {
+        if (result.warning) {
+          alert(result.warning);
+        }
         setSelectedAnalysisId(result.id);
         setActiveTab("analyses");
         fetchBando();
@@ -244,6 +248,8 @@ export default function BandoDetailPage({
           </button>
         ))}
       </div>
+
+      <AiDisclaimer compact className="max-w-3xl" />
 
       {analyzing && (
         <div

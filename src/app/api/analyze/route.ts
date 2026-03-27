@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { randomUUID } from "crypto";
 import { z } from "zod";
 import { requireAuth } from "@/lib/auth";
 import { ensureUser } from "@/lib/db/users";
@@ -25,6 +26,8 @@ const zBody = z.object({
 export const maxDuration = 120;
 
 export async function POST(req: NextRequest) {
+  const requestId = randomUUID();
+  const t0 = Date.now();
   try {
     const userId = await requireAuth();
     await ensureUser(userId);
@@ -32,6 +35,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const parsed = zBody.safeParse(body);
     if (!parsed.success) {
+      console.warn("[analyze] invalid payload", { requestId, details: parsed.error.flatten() });
       return NextResponse.json(
         { error: "Payload non valido.", details: parsed.error.flatten() },
         { status: 400 }
@@ -39,8 +43,17 @@ export async function POST(req: NextRequest) {
     }
     const { bandoId, documentId, title, content, fileName } = parsed.data;
 
+    console.info("[analyze] start", {
+      requestId,
+      bandoId,
+      userIdPrefix: userId.slice(0, 12),
+      contentLength: content.length,
+      fileName: fileName ?? null,
+    });
+
     const bandoRows = await db.select().from(bandi).where(eq(bandi.id, bandoId)).limit(1);
     if (bandoRows.length === 0 || bandoRows[0].userId !== userId) {
+      console.warn("[analyze] bando not found or forbidden", { requestId, bandoId });
       return NextResponse.json({ error: "Bando non trovato." }, { status: 404 });
     }
 
@@ -67,7 +80,17 @@ export async function POST(req: NextRequest) {
     await incrementRateLimit(userId, "analyze_minute");
 
     const result = await analyzeDocumentWithLLM(content, fileName);
-    await incrementAnalysisCount(userId);
+    const isFallback = result.provider === "fallback";
+
+    if (!isFallback) {
+      await incrementAnalysisCount(userId);
+    } else {
+      console.warn("[analyze] fallback result — analysis quota not consumed", {
+        requestId,
+        bandoId,
+        reason: result.fallbackReason,
+      });
+    }
 
     const [inserted] = await db
       .insert(analyses)
@@ -85,6 +108,15 @@ export async function POST(req: NextRequest) {
       })
       .returning();
 
+    const ms = Date.now() - t0;
+    console.info("[analyze] ok", {
+      requestId,
+      bandoId,
+      provider: result.provider,
+      fallback: isFallback,
+      durationMs: ms,
+    });
+
     return NextResponse.json({
       id: inserted.id,
       summary: inserted.summary,
@@ -95,10 +127,20 @@ export async function POST(req: NextRequest) {
       suggestions: inserted.suggestions,
       rawContent: inserted.rawContent,
       createdAt: inserted.createdAt,
+      provider: result.provider,
+      warning: isFallback
+        ? "L’analisi AI non è stata completata: è stato salvato un estratto del testo. Il conteggio analisi non è stato consumato. Riprova più tardi."
+        : null,
     });
   } catch (err) {
-    console.error("Analyze error:", err);
+    const ms = Date.now() - t0;
+    console.error("[analyze] error", {
+      requestId,
+      durationMs: ms,
+      err: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+    });
     const message = err instanceof Error ? err.message : "Errore analisi";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: message, requestId }, { status: 500 });
   }
 }

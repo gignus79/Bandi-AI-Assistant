@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
+import { WelcomeMediaMatterLogo } from "@/components/layout/WelcomeMediaMatterLogo";
+import { AiDisclaimer } from "@/components/legal/AiDisclaimer";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Footer } from "@/components/layout/Footer";
 import { BetaBadge } from "@/components/ui/BetaBadge";
@@ -20,6 +22,7 @@ export default function HomePage() {
       </div>
 
       <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-16 sm:px-6">
+        <WelcomeMediaMatterLogo />
         <div className="mb-6 flex flex-wrap items-center justify-center gap-2">
           <span className="inline-flex items-center gap-2 rounded-full border border-violet-400/25 bg-violet-100/90 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-violet-800 shadow-sm backdrop-blur-md dark:border-violet-400/25 dark:bg-violet-950/40 dark:text-violet-200/90 dark:shadow-[0_0_24px_rgba(139,92,246,0.25)] sm:text-xs">
             <span className="h-1.5 w-1.5 rounded-full bg-cyan-500 shadow-[0_0_10px_#22d3ee] dark:bg-cyan-400" aria-hidden />
@@ -112,6 +115,9 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
+              <div className="mt-8">
+                <AiDisclaimer />
+              </div>
             </div>
           </div>
         </div>
