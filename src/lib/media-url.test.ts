@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { googleDriveDirectViewUrl } from "./media-url";
+import { googleDriveDirectViewUrl, googleDriveThumbnailUrl } from "./media-url";
 
 describe("googleDriveDirectViewUrl", () => {
   it("converts /file/d/ sharing link", () => {
@@ -19,6 +19,14 @@ describe("googleDriveDirectViewUrl", () => {
   it("returns other URLs unchanged", () => {
     expect(googleDriveDirectViewUrl("https://example.com/logo.png")).toBe(
       "https://example.com/logo.png"
+    );
+  });
+});
+
+describe("googleDriveThumbnailUrl", () => {
+  it("builds thumbnail URL", () => {
+    expect(googleDriveThumbnailUrl("abcXYZ", 400)).toBe(
+      "https://drive.google.com/thumbnail?id=abcXYZ&sz=w400"
     );
   });
 });

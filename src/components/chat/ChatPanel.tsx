@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Copy, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 
 interface Message {
   id: string;
@@ -107,9 +108,9 @@ export function ChatPanel({
   };
 
   return (
-    <div className="flex flex-col rounded-lg border border-border bg-card">
-      <div className="flex items-center justify-between border-b border-border px-3 py-2">
-        <span className="text-sm font-medium text-foreground">Chat</span>
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-card shadow-sm dark:border-white/10">
+      <div className="flex items-center justify-between border-b border-slate-200/80 bg-muted/30 px-4 py-3 dark:border-white/10 dark:bg-white/5">
+        <span className="text-sm font-semibold tracking-tight text-foreground">Chat</span>
         {messages.length > 0 && (
           <button
             type="button"
@@ -121,7 +122,7 @@ export function ChatPanel({
           </button>
         )}
       </div>
-      <div className="max-h-[60vh] min-h-[320px] overflow-y-auto p-4">
+      <div className="max-h-[60vh] min-h-[320px] overflow-y-auto bg-slate-50/50 px-3 py-4 dark:bg-black/20 sm:px-5">
         {messages.length === 0 ? (
           <div className="space-y-4">
             <p className="text-center text-sm text-muted-foreground">
@@ -143,25 +144,27 @@ export function ChatPanel({
             </div>
           </div>
         ) : (
-          <ul className="space-y-3">
+          <ul className="flex flex-col gap-5 sm:gap-6">
             {messages.map((m) => (
               <li
                 key={m.id || m.createdAt + m.role}
                 className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
+                  className={`max-w-[min(100%,42rem)] rounded-2xl text-sm shadow-sm ${
                     m.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-foreground"
+                      ? "bg-primary px-4 py-3 text-primary-foreground sm:px-5"
+                      : "chat-assistant-bubble border border-violet-200/50 bg-white px-4 py-4 text-foreground dark:border-violet-500/20 dark:bg-gradient-to-b dark:from-[#14121c] dark:to-[#0e0c14] sm:px-6 sm:py-5"
                   }`}
                 >
                   {m.role === "user" ? (
-                    <div className="whitespace-pre-wrap">{m.content}</div>
+                    <div className="whitespace-pre-wrap leading-relaxed">{m.content}</div>
                   ) : (
-                    <div className="chat-markdown prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold prose-headings:text-foreground prose-h2:mt-6 prose-h2:mb-3 prose-h3:mt-5 prose-h3:mb-2 prose-h4:mt-4 prose-h4:mb-2 first:prose-headings:mt-0 prose-p:my-3 prose-p:leading-relaxed prose-p:text-foreground prose-p:first:mt-0 prose-ul:my-4 prose-ol:my-4 prose-ul:space-y-1 prose-ol:space-y-1 prose-li:my-1.5 prose-li:leading-relaxed prose-blockquote:my-4 prose-blockquote:border-l-primary prose-hr:my-8 prose-strong:text-foreground prose-em:text-foreground prose-a:text-primary prose-a:underline prose-table:my-4 prose-table:text-xs prose-th:bg-muted/50 prose-th:px-2 prose-th:py-1 prose-td:px-2 prose-td:py-1 prose-th:border prose-td:border">
+                    <div
+                      className="chat-markdown prose prose-sm max-w-none sm:prose-base dark:prose-invert prose-headings:scroll-mt-4 prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-foreground prose-h2:mt-8 prose-h2:mb-4 prose-h2:border-b prose-h2:border-border/60 prose-h2:pb-2 prose-h3:mt-7 prose-h3:mb-3 prose-h4:mt-6 prose-h4:mb-2 prose-p:mb-4 prose-p:mt-0 prose-p:leading-[1.7] prose-p:text-foreground prose-p:first:mt-0 prose-ul:my-5 prose-ol:my-5 prose-ul:pl-1 prose-ol:pl-1 prose-li:my-2 prose-li:leading-relaxed prose-li:marker:text-primary prose-blockquote:my-5 prose-blockquote:border-l-4 prose-blockquote:border-violet-400/50 prose-blockquote:bg-muted/40 prose-blockquote:py-1 prose-blockquote:pl-4 prose-blockquote:italic dark:prose-blockquote:border-violet-400/40 dark:prose-blockquote:bg-white/5 prose-hr:my-10 prose-strong:text-foreground prose-em:text-foreground prose-a:text-primary prose-a:font-medium prose-a:underline prose-a:underline-offset-2 prose-table:my-6 prose-table:text-sm prose-th:bg-muted/60 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2"
+                    >
                       <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
+                        remarkPlugins={[remarkGfm, remarkBreaks]}
                         components={{
                           a: ({ href, children }) => (
                             <a href={href} target="_blank" rel="noopener noreferrer">

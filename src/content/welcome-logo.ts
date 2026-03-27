@@ -1,10 +1,15 @@
-import { googleDriveDirectViewUrl } from "@/lib/media-url";
+import { googleDriveDirectViewUrl, googleDriveThumbnailUrl } from "@/lib/media-url";
 
-/** Logo MediaMatter sulla welcome screen (varianti tema). */
-export const welcomeLogoBlackUrl = googleDriveDirectViewUrl(
-  "https://drive.google.com/file/d/1htK7uAQJu53kOIGNMG8Kd0er4HYFKrS0/view?usp=sharing"
-);
+/** ID file Drive — varianti logo welcome (black = tema chiaro, white = tema scuro). */
+export const WELCOME_LOGO_BLACK_ID = "1htK7uAQJu53kOIGNMG8Kd0er4HYFKrS0";
+export const WELCOME_LOGO_WHITE_ID = "1oEMitlrwoGHiVC33XG0c-4RpTd_SvU3j";
 
-export const welcomeLogoWhiteUrl = googleDriveDirectViewUrl(
-  "https://drive.google.com/file/d/1oEMitlrwoGHiVC33XG0c-4RpTd_SvU3j/view?usp=sharing"
-);
+/** Ordine: thumbnail (più affidabile per embedding), poi export=view. */
+export function welcomeLogoCandidateUrls(fileId: string): string[] {
+  return [
+    googleDriveThumbnailUrl(fileId, 800),
+    googleDriveDirectViewUrl(
+      `https://drive.google.com/file/d/${fileId}/view?usp=sharing`
+    ),
+  ];
+}

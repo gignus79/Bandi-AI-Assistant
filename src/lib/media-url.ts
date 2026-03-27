@@ -15,3 +15,8 @@ export function googleDriveDirectViewUrl(input: string): string {
   }
   return u;
 }
+
+/** Anteprima pubblica Google Drive — spesso funziona dove `uc?export=view` restituisce HTML. */
+export function googleDriveThumbnailUrl(fileId: string, width = 800): string {
+  return `https://drive.google.com/thumbnail?id=${fileId}&sz=w${width}`;
+}
