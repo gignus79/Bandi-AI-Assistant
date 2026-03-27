@@ -20,27 +20,17 @@ export function UpgradePromptModal({
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 animate-in fade-in data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0" />
-        <Dialog.Content
-          className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-card p-6 shadow-lg animate-in fade-in zoom-in-95 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
-          aria-describedby="upgrade-modal-description"
-          aria-labelledby="upgrade-modal-title"
-        >
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-card p-6 shadow-lg animate-in fade-in zoom-in-95 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95">
           <div className="flex items-start justify-between gap-4">
             <div className="flex gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
                 <Sparkles className="h-5 w-5" aria-hidden />
               </div>
               <div>
-                <Dialog.Title
-                  id="upgrade-modal-title"
-                  className="text-lg font-semibold text-foreground"
-                >
+                <Dialog.Title className="text-lg font-semibold text-foreground">
                   Passa a un piano superiore
                 </Dialog.Title>
-                <Dialog.Description
-                  id="upgrade-modal-description"
-                  className="mt-1 text-sm text-muted-foreground"
-                >
+                <Dialog.Description className="mt-1 text-sm text-muted-foreground">
                   {message}
                 </Dialog.Description>
               </div>

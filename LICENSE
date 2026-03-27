@@ -1,0 +1,24 @@
+Proprietary License — All Rights Reserved
+
+Copyright (c) 2025–2026 Giorgio Lovecchio / MediaMatter. All rights reserved.
+
+This software (“Bandi AI Assistant”) and its source code are proprietary and confidential.
+They are not open source and are not licensed for redistribution, modification, commercial use,
+or public hosting by third parties.
+
+Permissions
+- No permission is granted to use, copy, modify, merge, publish, distribute, sublicense,
+  and/or sell copies of the Software, except as expressly authorized in writing by the
+  copyright holder.
+
+Subscription and services
+- Access to hosted services, usage limits, and billing are governed by the terms presented
+  in the application (e.g. free tier, paid plans via Stripe) and separate agreements,
+  not by this file.
+
+Third-party components
+- This application may depend on third-party libraries under their respective licenses
+  (see package manifests). Those licenses apply only to those dependencies, not to the
+  proprietary application code as a whole.
+
+For licensing inquiries: contact the copyright holder.

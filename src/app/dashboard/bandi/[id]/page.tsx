@@ -92,7 +92,12 @@ export default function BandoDetailPage({
       .catch(() => {});
   }, []);
 
-  const handleParsed = async (text: string, fileName?: string, sourceType?: "file" | "url" | "paste") => {
+  const handleParsed = async (
+    text: string,
+    fileName?: string,
+    sourceType?: "file" | "url" | "paste",
+    sourceUrl?: string | null
+  ) => {
     await fetch("/api/documents", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -101,8 +106,29 @@ export default function BandoDetailPage({
         fileName: fileName ?? "Testo incollato",
         content: text,
         sourceType: sourceType ?? "paste",
+        ...(sourceUrl ? { sourceUrl } : {}),
       }),
     });
+    fetchBando();
+  };
+
+  const handleUrlDocuments = async (
+    items: { text: string; fileName?: string; mimeType?: string; sourceUrl?: string }[]
+  ) => {
+    for (const it of items) {
+      await fetch("/api/documents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bandoId: id,
+          fileName: it.fileName ?? "Documento da URL",
+          content: it.text,
+          mimeType: it.mimeType,
+          sourceType: "url" as const,
+          ...(it.sourceUrl ? { sourceUrl: it.sourceUrl } : {}),
+        }),
+      });
+    }
     fetchBando();
   };
 
@@ -169,7 +195,12 @@ export default function BandoDetailPage({
   };
 
   const handleFileOrUrlContent = (text: string, fileName?: string, isUrl?: boolean) => {
-    handleParsed(text, fileName ?? (isUrl ? "URL" : "Documento"), isUrl ? "url" : "file");
+    handleParsed(
+      text,
+      fileName ?? (isUrl ? "URL" : "Documento"),
+      isUrl ? "url" : "file",
+      null
+    );
   };
 
   if (loading || !data) {
@@ -254,10 +285,7 @@ export default function BandoDetailPage({
               <p className="sr-only">
                 Inserisci un URL: la pagina verrà scrapata e il contenuto aggiunto ai documenti per l’analisi.
               </p>
-              <UrlInput
-                onParsed={(text, fileName) => handleFileOrUrlContent(text, fileName ?? "URL", true)}
-                onError={(err) => alert(err)}
-              />
+              <UrlInput onDocuments={handleUrlDocuments} onError={(err) => alert(err)} />
             </div>
             <div className="mt-4">
               <label className="mb-2 block text-sm font-medium text-foreground">

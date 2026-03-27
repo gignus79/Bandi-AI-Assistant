@@ -1,6 +1,8 @@
-export function Footer() {
+export function Footer({ className }: { className?: string }) {
   return (
-    <footer className="mt-auto border-t border-border bg-muted/30 px-3 py-5 sm:px-4 sm:py-6">
+    <footer
+      className={`mt-auto border-t border-border bg-muted/30 px-3 py-5 sm:px-4 sm:py-6 ${className ?? ""}`}
+    >
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row">
         <div className="text-center text-sm text-muted-foreground sm:text-left">
           <span className="font-medium text-foreground">MediaMatter</span>

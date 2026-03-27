@@ -74,4 +74,4 @@ Il file `.env.example` elenca le variabili d’ambiente necessarie senza valori 
 
 ## Licenza
 
-Progetto privato. Tutti i diritti riservati.
+Il codice è **proprietario** e **non** è rilasciato come open source. Vedi il file [`LICENSE`](./LICENSE) nel repository. L’uso dell’applicazione hosted e i piani di abbonamento sono regolati dai termini mostrati nell’app e dagli accordi con lo Stripe Checkout.

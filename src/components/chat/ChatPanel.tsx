@@ -31,6 +31,7 @@ interface ChatPanelProps {
 
 export function ChatPanel({
   bandoId,
+  bandoTitle,
   initialMessages,
   onNewMessages,
   onLimitReached,
@@ -124,8 +125,8 @@ export function ChatPanel({
         {messages.length === 0 ? (
           <div className="space-y-4">
             <p className="text-center text-sm text-muted-foreground">
-              Scrivi un messaggio o scegli una domanda veloce. La chat è
-              persistente e usa i documenti e le analisi già caricati.
+              Bandi: <span className="font-medium text-foreground">{bandoTitle}</span>. Scrivi un messaggio o scegli una
+              domanda veloce. La chat è persistente e usa i documenti e le analisi già caricati.
             </p>
             <div className="flex flex-wrap justify-center gap-2">
               {QUICK_QUESTIONS.map((q) => (

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { ensureUser } from "@/lib/db/users";
-import { parseFile, parseUrl } from "@/lib/parsers";
+import { parseFile, scrapeUrlWithPdfs } from "@/lib/parsers";
 
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,13 +16,23 @@ export async function POST(req: NextRequest) {
       const url = body.url as string | undefined;
       const pasted = body.text as string | undefined;
       if (url) {
-        const parsed = await parseUrl(url);
+        const scraped = await scrapeUrlWithPdfs(url);
+        const first = scraped.items[0];
         return NextResponse.json({
-          text: parsed.text,
-          fileName: parsed.fileName,
-          mimeType: parsed.mimeType,
-          sourceUrl: parsed.sourceUrl,
+          items: scraped.items.map((it) => ({
+            text: it.text,
+            fileName: it.fileName,
+            mimeType: it.mimeType,
+            sourceUrl: it.sourceUrl,
+            sourceType: "url" as const,
+            kind: it.kind,
+          })),
+          text: first?.text,
+          fileName: first?.fileName,
+          mimeType: first?.mimeType,
+          sourceUrl: first?.sourceUrl,
           sourceType: "url" as const,
+          meta: scraped.meta,
         });
       }
       if (typeof pasted === "string" && pasted.trim()) {

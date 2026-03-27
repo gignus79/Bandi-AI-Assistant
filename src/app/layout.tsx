@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
-import { itIT } from "@clerk/localizations";
-import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { AppProviders } from "@/components/providers/AppProviders";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,16 +14,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider
-      localization={itIT}
-      afterSignInUrl="/dashboard"
-      afterSignUpUrl="/dashboard"
-    >
-      <html lang="it" suppressHydrationWarning>
-        <body className="min-h-screen antialiased">
-          <ThemeProvider>{children}</ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="it" suppressHydrationWarning>
+      <body className="min-h-screen antialiased">
+        <AppProviders>{children}</AppProviders>
+      </body>
+    </html>
   );
 }

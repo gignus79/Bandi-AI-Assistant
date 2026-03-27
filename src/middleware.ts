@@ -9,11 +9,18 @@ const isPublicRoute = createRouteMatcher([
   "/api/webhooks(.*)",
 ]);
 
-export default clerkMiddleware(async (auth, request) => {
-  if (!isPublicRoute(request)) {
-    await auth.protect();
+const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+
+export default clerkMiddleware(
+  async (auth, request) => {
+    if (!isPublicRoute(request)) {
+      await auth.protect();
+    }
+  },
+  {
+    ...(appUrl ? { authorizedParties: [appUrl.replace(/\/$/, "")] } : {}),
   }
-});
+);
 
 export const config = {
   matcher: [

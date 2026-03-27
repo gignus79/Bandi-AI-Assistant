@@ -3,7 +3,7 @@ import { parsePdf } from "./pdf";
 import { parseXlsx } from "./xlsx";
 import { parseCsv } from "./csv";
 import { parseRtf } from "./rtf";
-import { parseUrl } from "./url";
+import { scrapeUrlWithPdfs } from "./url-scrape";
 import { parseImage } from "./vision";
 
 const MIME_TO_PARSER: Record<
@@ -63,5 +63,6 @@ export async function parseFile(
   return Promise.resolve(result);
 }
 
-export { parseUrl };
+export { scrapeUrlWithPdfs };
+export type { ScrapedUrlItem, UrlScrapeResult } from "./url-scrape";
 export type { ParsedDocument };

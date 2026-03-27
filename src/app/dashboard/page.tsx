@@ -4,6 +4,8 @@ import { Suspense, useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PlusCircle } from "lucide-react";
+import { BrandLogo } from "@/components/ui/BrandLogo";
+import { BetaBadge } from "@/components/ui/BetaBadge";
 
 interface Bando {
   id: string;
@@ -85,15 +87,14 @@ function DashboardContent() {
 
   return (
     <div className="space-y-8">
-      <section className="rounded-xl border border-border bg-card p-6 text-foreground">
+      <section className="rounded-[24px] border border-violet-500/20 bg-card/60 p-6 text-foreground shadow-[0_0_48px_-16px_rgba(139,92,246,0.25)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0c0818]/70">
         <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-          <img
-            src="https://giorgiolovecchio.com/wp-content/uploads/elementor/thumbs/Logo_MediaMatter_300x150-rfany5j6vb0rsiwht0gezcsi5tz8l3md77iqrr52k0.png"
-            alt="MediaMatter"
-            className="h-14 w-auto object-contain sm:h-16"
-          />
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">Bandi AI Assistant</h2>
+          <BrandLogo heightClass="h-14 sm:h-16" />
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2 gap-y-1">
+              <h2 className="text-lg font-semibold text-foreground">Bandi AI Assistant</h2>
+              <BetaBadge />
+            </div>
             <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
               Carica la documentazione dei bandi (PDF, Excel, URL o testo), avvia l’analisi e ottieni
               sintesi, requisiti, scadenze, criteri di valutazione e suggerimenti con intelligenza artificiale.
@@ -108,7 +109,7 @@ function DashboardContent() {
           <input
             type="text"
             placeholder="Nome nuovo bando..."
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+            className="rounded-xl border border-border/80 bg-background/80 px-3 py-2 text-sm backdrop-blur-sm dark:border-white/10 dark:bg-[#0c0818]/80"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && createBando()}
@@ -117,7 +118,7 @@ function DashboardContent() {
             type="button"
             onClick={createBando}
             disabled={creating || !newTitle.trim()}
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-600 via-blue-600 to-cyan-500 px-5 py-2 text-sm font-semibold text-white shadow-[0_0_24px_rgba(139,92,246,0.45)] transition hover:brightness-110 disabled:opacity-50"
           >
             <PlusCircle className="h-4 w-4" />
             Nuovo bando
@@ -128,7 +129,7 @@ function DashboardContent() {
       {loading ? (
         <p className="text-muted-foreground">Caricamento...</p>
       ) : bandi.length === 0 ? (
-        <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground">
+        <div className="rounded-[20px] border border-violet-500/15 bg-card/50 p-8 text-center text-muted-foreground backdrop-blur-md dark:border-white/10 dark:bg-[#0c0818]/60">
           <p className="mb-4">Non hai ancora creato bandi.</p>
           <p className="text-sm">
             Inserisci un nome sopra e clicca &quot;Nuovo bando&quot; per iniziare.
@@ -140,7 +141,7 @@ function DashboardContent() {
             <li key={b.id}>
               <Link
                 href={`/dashboard/bandi/${b.id}`}
-                className="block rounded-lg border border-border bg-card p-4 shadow-sm transition hover:border-primary/50 hover:shadow"
+                className="block rounded-[20px] border border-violet-500/15 bg-card/50 p-4 shadow-sm backdrop-blur-sm transition hover:border-violet-400/40 hover:shadow-[0_0_28px_-8px_rgba(139,92,246,0.35)] dark:border-white/10 dark:bg-[#0c0818]/65"
               >
                 <h2 className="font-semibold text-foreground">{b.title}</h2>
                 {b.description && (
