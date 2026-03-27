@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AppAmbientBackground } from "@/components/layout/AppAmbientBackground";
 import { AppProviders } from "@/components/providers/AppProviders";
 import "./globals.css";
 
@@ -15,7 +16,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="it" suppressHydrationWarning>
-      <body className="min-h-screen antialiased">
+      <body className="min-h-screen bg-[#070212] antialiased">
+        <AppAmbientBackground />
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

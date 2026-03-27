@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
@@ -15,18 +14,7 @@ export default function DashboardLayout({
 }: { children: React.ReactNode }) {
   return (
     <OnboardingGate>
-    <div className="relative flex min-h-screen flex-col bg-background">
-      <div className="pointer-events-none fixed inset-0 -z-10">
-        <Image
-          src="/landing-hero-bg.png"
-          alt=""
-          fill
-          className="object-cover opacity-[0.14] blur-md"
-          sizes="100vw"
-          priority={false}
-        />
-        <div className="absolute inset-0 bg-background/90 backdrop-blur-[1px] dark:bg-[#070212]/92" />
-      </div>
+    <div className="relative flex min-h-screen flex-col bg-transparent">
       <header className="sticky top-0 z-10 border-b border-white/10 bg-background/75 px-3 py-2 shadow-[0_0_40px_-12px_rgba(139,92,246,0.15)] backdrop-blur-xl dark:border-violet-500/20 dark:bg-[#0a0612]/80">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2">
           <Link

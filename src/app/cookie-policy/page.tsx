@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Footer } from "@/components/layout/Footer";
+import { LegalPageLayout } from "@/components/layout/LegalPageLayout";
 
 export const metadata: Metadata = {
   title: "Cookie policy | Bandi AI Assistant",
@@ -9,16 +8,10 @@ export const metadata: Metadata = {
 
 export default function CookiePolicyPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <div className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">
-        <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">
-          ← Home
-        </Link>
-      <h1 className="text-2xl font-bold text-foreground">Cookie policy</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Ultimo aggiornamento: marzo 2025
-      </p>
-      <div className="prose prose-slate mt-6 dark:prose-invert max-w-none">
+    <LegalPageLayout>
+      <h1 className="text-2xl font-bold text-white">Cookie policy</h1>
+      <p className="mt-2 text-sm text-violet-200/75">Ultimo aggiornamento: marzo 2025</p>
+      <div className="prose prose-invert prose-violet mt-6 max-w-none prose-headings:text-violet-100 prose-p:text-slate-200/90 prose-a:text-cyan-300">
         <p>
           Bandi AI Assistant (MediaMatter – Giorgio Lovecchio) utilizza cookie e tecnologie simili per il funzionamento del sito e dell’autenticazione (Clerk).
         </p>
@@ -35,8 +28,6 @@ export default function CookiePolicyPage() {
           Dal browser puoi bloccare o cancellare i cookie; alcune funzionalità del sito potrebbero non essere disponibili.
         </p>
       </div>
-      </div>
-      <Footer />
-    </div>
+    </LegalPageLayout>
   );
 }

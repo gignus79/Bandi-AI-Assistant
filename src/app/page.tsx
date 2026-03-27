@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Footer } from "@/components/layout/Footer";
@@ -14,26 +13,7 @@ const TAGS = [
 
 export default function HomePage() {
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-[#070212] text-slate-100">
-      <div className="pointer-events-none absolute inset-0">
-        <Image
-          src="/landing-hero-bg.png"
-          alt=""
-          fill
-          className="object-cover opacity-[0.22] blur-sm"
-          sizes="100vw"
-          priority
-        />
-        <div
-          className="absolute inset-0 bg-gradient-to-b from-[#1a0a2e]/85 via-[#0d0618]/92 to-[#050208]"
-          aria-hidden
-        />
-        <div
-          className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(139,92,246,0.35),transparent)]"
-          aria-hidden
-        />
-      </div>
-
+    <div className="relative flex min-h-screen flex-col overflow-hidden text-slate-100">
       <div className="absolute right-3 top-3 z-20 sm:right-5 sm:top-5">
         <ThemeToggle />
       </div>
