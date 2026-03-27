@@ -9,6 +9,8 @@ import {
 export const users = pgTable("users", {
   id: text("id").primaryKey(), // Clerk user ID
   email: text("email"),
+  /** Prima app (slug) in cui l’utente è stato attribuito — utile con login unificato */
+  signupAppSlug: text("signup_app_slug"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -71,6 +73,8 @@ export const subscriptions = pgTable("subscriptions", {
   userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
+  /** Deploy da cui proviene l’abbonamento (NEXT_PUBLIC_APP_SLUG al checkout) */
+  appSlug: text("app_slug"),
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
   stripePriceId: text("stripe_price_id"),

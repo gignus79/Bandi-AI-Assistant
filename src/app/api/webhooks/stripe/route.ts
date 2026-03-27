@@ -53,6 +53,10 @@ export async function POST(req: NextRequest) {
         | "canceled"
         | "past_due"
         | "trialing";
+      const appSlug =
+        (session.metadata?.appSlug as string | undefined) ??
+        (sub.metadata?.appSlug as string | undefined) ??
+        null;
       const existing = await db
         .select()
         .from(subscriptions)
@@ -60,6 +64,7 @@ export async function POST(req: NextRequest) {
         .limit(1);
       const payload = {
         userId,
+        appSlug,
         stripeCustomerId: session.customer as string | null,
         stripeSubscriptionId: sub.id,
         stripePriceId: priceId,
@@ -86,6 +91,7 @@ export async function POST(req: NextRequest) {
       const userId = sub.metadata?.userId;
       if (!userId) break;
       const priceId = sub.items.data[0]?.price?.id ?? null;
+      const appSlugMeta = sub.metadata?.appSlug as string | undefined;
       const existing = await db
         .select()
         .from(subscriptions)
@@ -97,6 +103,9 @@ export async function POST(req: NextRequest) {
           .set({
             status: sub.status as "active" | "canceled" | "past_due" | "trialing",
             stripePriceId: priceId,
+            ...(existing[0].appSlug == null && appSlugMeta
+              ? { appSlug: appSlugMeta }
+              : {}),
             currentPeriodStart: new Date((sub.current_period_start ?? 0) * 1000),
             currentPeriodEnd: new Date((sub.current_period_end ?? 0) * 1000),
             updatedAt: new Date(),

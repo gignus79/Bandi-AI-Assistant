@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { ensureUser } from "@/lib/db/users";
 import { stripe } from "@/lib/stripe";
+import { getPublicAppSlug } from "@/lib/app-identity";
 import { PLANS } from "@/lib/stripe";
 import { z } from "zod";
 
@@ -54,6 +55,7 @@ export async function POST(req: NextRequest) {
     }
 
     const origin = req.headers.get("origin") ?? "http://localhost:3000";
+    const appSlug = getPublicAppSlug();
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
@@ -61,8 +63,12 @@ export async function POST(req: NextRequest) {
       success_url: successUrl ?? `${origin}/dashboard?success=1`,
       cancel_url: cancelUrl ?? `${origin}/pricing`,
       client_reference_id: userId,
+      metadata: {
+        userId,
+        appSlug,
+      },
       subscription_data: {
-        metadata: { userId },
+        metadata: { userId, appSlug },
       },
       allow_promotion_codes: true,
     });
