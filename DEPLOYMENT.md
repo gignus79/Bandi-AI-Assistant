@@ -55,6 +55,10 @@ Succede quando il browser apre l’app da un **host non registrato** nell’ista
 3. Non mischiare **chiavi live** con URL di preview: per i deploy preview usa chiavi **test** (`pk_test_`) oppure aggiungi l’origine preview in Clerk e in `NEXT_PUBLIC_CLERK_ALLOWED_ORIGINS`.
 4. Verifica che non ci siano redirect tra `www` e non-`www` che cambiano l’origine rispetto a quanto configurato.
 
+### Google login: `invalid_scope` + `invalid=[user]`
+
+Google non accetta lo scope letterale **`user`**. Se compare questo errore, in **Clerk → Social connections → Google** rimuovi `user` da eventuali **custom / additional OAuth scopes** e lascia i default (o solo scope documentati da Google).
+
 ## Scraping URL (limiti)
 
 Il server scarica pagine e PDF con **User-Agent da browser** e timeout configurabile:

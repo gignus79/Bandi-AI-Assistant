@@ -88,6 +88,16 @@ Se compare un errore OAuth legato a scope (`openid`, `userinfo.email`, `userinfo
 4. **Ambiente chiavi**: in locale usa le chiavi **publishable/secret** di sviluppo (`pk_test_` / `sk_test_`); in produzione le chiavi **live** (`pk_live_` / `sk_live_`). Mischio dev/prod tra URL e chiavi causa errori al login.
 5. **OAuth consent screen**: se l’app Google è in modalità *Testing*, solo gli utenti di test possono accedere; in *Production* verifica dominio e schermata di consenso.
 
+### Errore Google `400: invalid_scope` — `invalid=[user]`
+
+Google rifiuta la richiesta se tra gli scope c’è il valore letterale **`user`**: **non è uno scope OAuth valido** (non va confuso con `profile` o con gli URL `userinfo.*`).
+
+1. Apri **[Clerk Dashboard](https://dashboard.clerk.com)** → la tua applicazione → **User & Authentication** → **Social connections** → **Google**.
+2. Cerca **`Custom scopes`**, **`Additional scopes`** o campo simile dove sono elencati scope extra e **rimuovi** qualsiasi voce `user` (o lascia solo gli scope standard / lista vuota per usare i default di Clerk).
+3. Salva, attendi 1–2 minuti e riprova il login con Google.
+
+Se in passato è stato aggiunto `user` pensando alla “info utente”, gli scope corretti sono già quelli predefiniti (`openid`, `email` / `userinfo.email`, `profile` / `userinfo.profile`), non la parola `user` da sola.
+
 Il middleware include `authorizedParties` basato su `NEXT_PUBLIC_APP_URL`, più `http://localhost:3000` in sviluppo, l’host `VERCEL_URL` sui deploy Vercel e, se serve, **`NEXT_PUBLIC_CLERK_ALLOWED_ORIGINS`** (lista separata da virgole).
 
 ### «Production Keys are only allowed for domain …» / errore sull’header Origin
