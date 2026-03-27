@@ -6,21 +6,21 @@ import Image from "next/image";
  */
 export function AppAmbientBackground() {
   return (
-    <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    <div className="pointer-events-none fixed inset-0 -z-10 hidden overflow-hidden dark:block">
       <Image
         src="/ambient-bg.png"
         alt=""
         fill
-        className="scale-[1.15] object-cover opacity-[0.16] blur-3xl saturate-125"
+        className="scale-[1.08] object-cover opacity-[0.38] blur-2xl saturate-125"
         sizes="100vw"
         priority
       />
       <div
-        className="absolute inset-0 bg-gradient-to-b from-[#1a0a2e]/92 via-[#0d0618]/96 to-[#050208]"
+        className="absolute inset-0 bg-gradient-to-b from-[#1a0a2e]/78 via-[#0d0618]/88 to-[#050208]"
         aria-hidden
       />
       <div
-        className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(139,92,246,0.38),transparent)]"
+        className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(139,92,246,0.42),transparent)]"
         aria-hidden
       />
       <div

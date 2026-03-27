@@ -87,18 +87,24 @@ function DashboardContent() {
 
   return (
     <div className="space-y-8">
-      <section className="rounded-[24px] border border-violet-500/20 bg-card/60 p-6 text-foreground shadow-[0_0_48px_-16px_rgba(139,92,246,0.25)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0c0818]/70">
+      <section className="rounded-[24px] border border-slate-200 bg-white/95 p-6 text-foreground shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-[#0c0818]/70 dark:shadow-[0_0_48px_-16px_rgba(139,92,246,0.25)]">
         <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
           <BrandLogo heightClass="h-14 sm:h-16" />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2 gap-y-1">
-              <h2 className="text-lg font-semibold text-foreground">Bandi AI Assistant</h2>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-foreground">
+                Bandi AI Assistant
+              </h2>
               <BetaBadge />
             </div>
-            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-700 dark:text-muted-foreground">
               Carica la documentazione dei bandi (PDF, Excel, URL o testo), avvia l’analisi e ottieni
               sintesi, requisiti, scadenze, criteri di valutazione e suggerimenti con intelligenza artificiale.
-              Crea bandi, condividi le analisi ed esporta in PDF o calendario.
+              Crea bandi, condividi le analisi ed esporta in PDF o calendario. Per limiti e piani vedi{" "}
+              <Link href="/dashboard/pricing" className="font-medium text-violet-700 underline underline-offset-2 hover:text-violet-900 dark:text-cyan-300 dark:hover:text-cyan-200">
+                Abbonamento
+              </Link>
+              .
             </p>
           </div>
         </div>
@@ -109,7 +115,7 @@ function DashboardContent() {
           <input
             type="text"
             placeholder="Nome nuovo bando..."
-            className="rounded-xl border border-border/80 bg-background/80 px-3 py-2 text-sm backdrop-blur-sm dark:border-white/10 dark:bg-[#0c0818]/80"
+            className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm backdrop-blur-sm placeholder:text-slate-500 dark:border-white/10 dark:bg-[#0c0818]/80 dark:text-foreground dark:placeholder:text-muted-foreground"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && createBando()}
@@ -129,7 +135,7 @@ function DashboardContent() {
       {loading ? (
         <p className="text-muted-foreground">Caricamento...</p>
       ) : bandi.length === 0 ? (
-        <div className="rounded-[20px] border border-violet-500/15 bg-card/50 p-8 text-center text-muted-foreground backdrop-blur-md dark:border-white/10 dark:bg-[#0c0818]/60">
+        <div className="rounded-[20px] border border-slate-200 bg-white/95 p-8 text-center text-slate-700 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-[#0c0818]/60 dark:text-muted-foreground">
           <p className="mb-4">Non hai ancora creato bandi.</p>
           <p className="text-sm">
             Inserisci un nome sopra e clicca &quot;Nuovo bando&quot; per iniziare.
@@ -141,15 +147,15 @@ function DashboardContent() {
             <li key={b.id}>
               <Link
                 href={`/dashboard/bandi/${b.id}`}
-                className="block rounded-[20px] border border-violet-500/15 bg-card/50 p-4 shadow-sm backdrop-blur-sm transition hover:border-violet-400/40 hover:shadow-[0_0_28px_-8px_rgba(139,92,246,0.35)] dark:border-white/10 dark:bg-[#0c0818]/65"
+                className="block rounded-[20px] border border-slate-200 bg-white p-4 text-slate-900 shadow-sm backdrop-blur-sm transition hover:border-violet-400/50 hover:shadow-md dark:border-white/10 dark:bg-[#0c0818]/65 dark:text-foreground dark:hover:border-violet-400/40 dark:hover:shadow-[0_0_28px_-8px_rgba(139,92,246,0.35)]"
               >
-                <h2 className="font-semibold text-foreground">{b.title}</h2>
+                <h2 className="font-semibold text-slate-900 dark:text-foreground">{b.title}</h2>
                 {b.description && (
-                  <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                  <p className="mt-1 line-clamp-2 text-sm text-slate-600 dark:text-muted-foreground">
                     {b.description}
                   </p>
                 )}
-                <p className="mt-2 text-xs text-muted-foreground">
+                <p className="mt-2 text-xs text-slate-500 dark:text-muted-foreground">
                   {new Date(b.createdAt).toLocaleDateString("it-IT")}
                 </p>
               </Link>

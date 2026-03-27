@@ -15,7 +15,7 @@ export default function DashboardLayout({
   return (
     <OnboardingGate>
     <div className="relative flex min-h-screen flex-col bg-transparent">
-      <header className="sticky top-0 z-10 border-b border-white/10 bg-background/75 px-3 py-2 shadow-[0_0_40px_-12px_rgba(139,92,246,0.15)] backdrop-blur-xl dark:border-violet-500/20 dark:bg-[#0a0612]/80">
+      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-xl dark:border-violet-500/20 dark:bg-[#0a0612]/80 dark:shadow-[0_0_40px_-12px_rgba(139,92,246,0.15)]">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2">
           <Link
             href="/dashboard"
