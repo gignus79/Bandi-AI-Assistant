@@ -111,7 +111,6 @@ Applicazione **Next.js** per professionisti e organizzazioni che devono leggere 
 
 **Vercel**: collegare il repository, impostare le variabili per Production (e Preview se serve). Webhook Stripe: `https://<dominio>/api/webhooks/stripe`. Webhook Clerk: `https://<dominio>/api/webhooks/clerk` con lo stesso signing secret di `CLERK_WEBHOOK_SIGNING_SECRET`. Ridistribuire dopo modifiche alle variabili.
 
----
 
 ## Verifica locale
 
@@ -125,23 +124,7 @@ I test unitari coprono helper (URL, Markdown, identità app). E2E e integrazione
 
 ---
 
-## Clerk: OAuth e domini
 
-- `NEXT_PUBLIC_APP_URL` in produzione = origine pubblica effettiva (schema, host, coerenza slash). Ridistribuire dopo modifiche.
-- **Google Cloud Console**: *Authorized JavaScript origins* e *Authorized redirect URIs* come da Clerk per l’ambiente.
-- Scope **`user`**: non valido per Google OAuth; in Clerk → Google rimuovere scope custom errati.
-- **Production Keys / Origin**: l’hostname deve essere in **Clerk → Domains**; opzionale `NEXT_PUBLIC_CLERK_ALLOWED_ORIGINS` per preview.
-
-### Email OTP (Clerk)
-
-L’invio è gestito da **Clerk**, non dall’app Next.js.
-
-- **Development**: tetto **100 email/mese** (e 20 SMS/mese) per OTP inviate da Clerk; superata la quota, le richieste OTP vengono rifiutate. Riferimento: [Test emails](https://clerk.com/docs/guides/development/testing/test-emails-and-phones). Produzione o piano adeguato per traffico reale.
-- **SMTP custom** in dashboard: validare credenziali se attivo.
-- Deliverability dominio proprio: [Email deliverability](https://clerk.com/docs/guides/development/email-deliverability).
-- Test senza inbox: `nome+clerk_test@example.com`, codice **`424242`** ([doc](https://clerk.com/docs/guides/development/testing/test-emails-and-phones)).
-
----
 
 ## Documentazione aggiuntiva
 
