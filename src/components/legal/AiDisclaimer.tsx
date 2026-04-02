@@ -17,11 +17,11 @@ export function AiDisclaimer({ className = "", compact = false }: AiDisclaimerPr
   }
   return (
     <div
-      className={`rounded-xl border border-amber-500/35 bg-amber-50/90 px-4 py-3 text-sm text-amber-950 dark:border-amber-400/25 dark:bg-amber-950/30 dark:text-amber-100/95 ${className}`}
+      className={`rounded-xl border border-violet-200/70 bg-gradient-to-br from-violet-50/95 via-white to-slate-50/90 px-4 py-3 text-sm text-slate-800 shadow-sm shadow-violet-500/10 dark:border-violet-500/25 dark:from-violet-950/45 dark:via-[#0f0a18] dark:to-slate-950/70 dark:text-violet-50/95 dark:shadow-violet-950/40 ${className}`}
       role="note"
     >
-      <p className="font-medium text-amber-900 dark:text-amber-100">Disclaimer — uso dell&apos;intelligenza artificiale</p>
-      <p className="mt-2 leading-relaxed text-amber-900/95 dark:text-amber-50/90">
+      <p className="font-medium text-slate-900 dark:text-violet-100">Disclaimer — uso dell&apos;intelligenza artificiale</p>
+      <p className="mt-2 leading-relaxed text-slate-700 dark:text-violet-50/90">
         Le analisi e le risposte in chat sono assistenza e non sostituiscono consulenza legale, fiscale o amministrativa.
         I contenuti possono essere incompleti o errati: controlla sempre bandi, allegati e comunicazioni degli enti
         erogatori. MediaMatter non è responsabile per decisioni basate esclusivamente sull&apos;output automatico.

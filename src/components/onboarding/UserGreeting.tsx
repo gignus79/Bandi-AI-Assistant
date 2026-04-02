@@ -1,32 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useUser } from "@clerk/nextjs";
 
-const STORAGE_KEY = "bandi_onboarding_v1";
+function displayLabel(user: {
+  fullName: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  username: string | null;
+  primaryEmailAddress: { emailAddress: string } | null;
+}): string | null {
+  const full = user.fullName?.trim();
+  if (full) return full;
+  const fromParts = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
+  if (fromParts) return fromParts;
+  const email = user.primaryEmailAddress?.emailAddress?.trim();
+  if (email) return email;
+  const un = user.username?.trim();
+  return un || null;
+}
 
 export function UserGreeting() {
-  const [name, setName] = useState<string | null>(null);
+  const { user, isLoaded } = useUser();
 
-  useEffect(() => {
-    const read = () => {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return;
-        const j = JSON.parse(raw) as { displayName?: string; completed?: boolean };
-        if (j.displayName) setName(j.displayName);
-      } catch {
-        /* ignore */
-      }
-    };
-    read();
-    window.addEventListener("bandi-onboarding-updated", read);
-    return () => window.removeEventListener("bandi-onboarding-updated", read);
-  }, []);
+  if (!isLoaded) {
+    return (
+      <span className="hidden max-w-[14rem] truncate text-sm text-muted-foreground sm:inline" aria-hidden>
+        ···
+      </span>
+    );
+  }
 
-  if (!name) return null;
+  if (!user) return null;
+
+  const label = displayLabel(user);
+  if (!label) return null;
+
   return (
-    <span className="hidden text-sm text-muted-foreground sm:inline">
-      Ciao, <span className="font-medium text-foreground">{name}</span>
+    <span className="hidden max-w-[16rem] truncate text-sm text-muted-foreground sm:inline" title={label}>
+      Ciao, <span className="font-medium text-foreground">{label}</span>
     </span>
   );
 }

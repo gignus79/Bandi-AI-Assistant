@@ -52,7 +52,7 @@ Applicazione **Next.js** per professionisti e organizzazioni che devono leggere 
 
 ## Avvio in locale
 
-1. **Clona** il repository e installa le dipendenze:
+1. Clona il repository e installa le dipendenze:
 
    ```bash
    git clone <url-del-repository>
@@ -60,26 +60,25 @@ Applicazione **Next.js** per professionisti e organizzazioni che devono leggere 
    npm install
    ```
 
-2. **Variabili d’ambiente**  
-   Copia `.env.example` in `.env.local`. Compila i valori reali **solo** in `.env.local` (file ignorato da Git). Consulta i commenti in `.env.example` per il significato di ogni variabile.
+2. Variabili d’ambiente: copia `.env.example` in `.env.local` e imposta i valori reali (solo in `.env.local`, mai in Git).
 
-3. **Schema database** (allinea il DB allo schema Drizzle):
+3. Schema database:
 
    ```bash
    npm run db:push
    ```
 
-   In alternativa, per progetti che usano migrazioni versionate: `npm run db:generate` e `npm run db:migrate`.
+   Alternativa con migrazioni SQL versionate: `npm run db:generate` e `npm run db:migrate`.
 
-4. **Sviluppo**
+4. Sviluppo:
 
    ```bash
    npm run dev
    ```
 
-   Apri [http://localhost:3000](http://localhost:3000).
+   [http://localhost:3000](http://localhost:3000)
 
-La **build di produzione** (`npm run build`) richiede le variabili obbligatorie disponibili in fase di build (in particolare chiavi Clerk pubbliche e URL app dove previsto).
+`npm run build` richiede le variabili obbligatorie in fase di build (chiavi Clerk pubbliche, `NEXT_PUBLIC_APP_URL` dove applicabile).
 
 ---
 
@@ -92,32 +91,29 @@ La **build di produzione** (`npm run build`) richiede le variabili obbligatorie 
 | `npm run lint` | ESLint |
 | `npm run test` | Vitest (unit) |
 | `npm run db:push` | Sincronizza schema Drizzle → DB |
-| `npm run db:generate` / `db:migrate` | Migrazioni SQL (workflow classico Drizzle) |
+| `npm run db:generate` / `db:migrate` | Migrazioni SQL (Drizzle) |
 
 ---
 
 ## Sicurezza e segreti
 
-- **Non committare** `.env`, `.env.local` né chiavi API. Il repository include solo `.env.example` con placeholder.
-- **Clerk**: usa chiavi `pk_test_` / `sk_test_` in sviluppo e `pk_live_` / `sk_live_` in produzione; allinea `NEXT_PUBLIC_APP_URL` e i domini autorizzati nella dashboard Clerk.
-- **Stripe**: `STRIPE_SECRET_KEY` e `STRIPE_WEBHOOK_SECRET` solo lato server; il webhook verifica la firma delle richieste in ingresso.
-- **LLM**: `OPENAI_API_KEY` e `ANTHROPIC_API_KEY` restano su variabili server-only (mai esposte al client).
-- **Database**: stringa di connessione con TLS (`sslmode=require` dove applicabile) e accesso limitato per ambiente.
-- **Multi-app / marketing**: `NEXT_PUBLIC_APP_SLUG` identifica il deploy senza mettere dati sensibili nel client; l’attribuzione utente è descritta in codice (metadata Clerk/Stripe/DB).
-
-Per dettagli operativi su domini, webhook e OAuth, usa la documentazione interna di deploy (non versionata) e le console Clerk / Stripe / Vercel.
+- Non versionare `.env`, `.env.local` né chiavi API. Template: `.env.example`.
+- **Clerk**: chiavi `pk_test_` / `sk_test_` in sviluppo; `pk_live_` / `sk_live_` in produzione. Allineare `NEXT_PUBLIC_APP_URL` e domini nella dashboard Clerk.
+- **Stripe**: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` solo server-side; il webhook verifica la firma delle richieste.
+- **Clerk webhooks**: endpoint `POST /api/webhooks/clerk`, variabile `CLERK_WEBHOOK_SIGNING_SECRET` (signing secret della dashboard). L’URL in Clerk deve coincidere con il dominio pubblico dell’app.
+- **LLM**: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` solo su variabili server.
+- **Database**: connessione TLS (`sslmode=require` dove richiesto), accesso ristretto per ambiente.
+- **Multi-app**: `NEXT_PUBLIC_APP_SLUG` per attribuzione deploy (metadata Clerk/Stripe/DB).
 
 ---
 
 ## Deploy
 
-Progetto pensato per **Vercel**: collega il repository, imposta le variabili d’ambiente per Production (e Preview se serve), configura il webhook Stripe verso `https://<tuo-dominio>/api/webhooks/stripe` e ridistribuisci dopo ogni modifica alle variabili.
+**Vercel**: collegare il repository, impostare le variabili per Production (e Preview se serve). Webhook Stripe: `https://<dominio>/api/webhooks/stripe`. Webhook Clerk: `https://<dominio>/api/webhooks/clerk` con lo stesso signing secret di `CLERK_WEBHOOK_SIGNING_SECRET`. Ridistribuire dopo modifiche alle variabili.
 
 ---
 
-## Qualità del codice (check locale)
-
-Prima di una release o di una PR, conviene eseguire:
+## Verifica locale
 
 ```bash
 npm run test
@@ -125,27 +121,35 @@ npm run lint
 npm run build
 ```
 
-I test unitari coprono helper (URL, Markdown chat, identità app); non sostituiscono test end-to-end su browser o integrazione reale con API esterne.
+I test unitari coprono helper (URL, Markdown, identità app). E2E e integrazione con API esterne sono fuori scope.
 
 ---
 
-## Clerk e Google OAuth (note rapide)
+## Clerk: OAuth e domini
 
-- **`NEXT_PUBLIC_APP_URL`**: in produzione deve coincidere con l’origine effettiva del sito (schema + host, coerenza sugli slash finali). Ridistribuire dopo le modifiche.
-- **Google Cloud Console**: *Authorized JavaScript origins* e *Authorized redirect URIs* devono includere gli URL indicati da Clerk per l’ambiente in uso.
-- **Errore `invalid_scope` con `user`**: Google non accetta lo scope letterale `user`. In Clerk → Google, rimuovi scope personalizzati non validi e usa i default documentati.
+- `NEXT_PUBLIC_APP_URL` in produzione = origine pubblica effettiva (schema, host, coerenza slash). Ridistribuire dopo modifiche.
+- **Google Cloud Console**: *Authorized JavaScript origins* e *Authorized redirect URIs* come da Clerk per l’ambiente.
+- Scope **`user`**: non valido per Google OAuth; in Clerk → Google rimuovere scope custom errati.
+- **Production Keys / Origin**: l’hostname deve essere in **Clerk → Domains**; opzionale `NEXT_PUBLIC_CLERK_ALLOWED_ORIGINS` per preview.
 
-Se compare un errore sulle **Production Keys** o sull’header **Origin**, verifica che l’hostname da cui apri l’app sia registrato in **Clerk → Domains** e che non si mescolino chiavi live con URL di preview non autorizzati. Opzionale: `NEXT_PUBLIC_CLERK_ALLOWED_ORIGINS` per origini aggiuntive (es. preview Vercel).
+### Email OTP (Clerk)
+
+L’invio è gestito da **Clerk**, non dall’app Next.js.
+
+- **Development**: tetto **100 email/mese** (e 20 SMS/mese) per OTP inviate da Clerk; superata la quota, le richieste OTP vengono rifiutate. Riferimento: [Test emails](https://clerk.com/docs/guides/development/testing/test-emails-and-phones). Produzione o piano adeguato per traffico reale.
+- **SMTP custom** in dashboard: validare credenziali se attivo.
+- Deliverability dominio proprio: [Email deliverability](https://clerk.com/docs/guides/development/email-deliverability).
+- Test senza inbox: `nome+clerk_test@example.com`, codice **`424242`** ([doc](https://clerk.com/docs/guides/development/testing/test-emails-and-phones)).
 
 ---
 
 ## Documentazione aggiuntiva
 
-- Cartella `docs/` per note interne (es. conformità).
-- Pagine legali nell’app: Privacy, Cookie policy.
+- `docs/` — note interne (conformità, sicurezza).
+- Privacy e Cookie policy nell’app.
 
 ---
 
 ## Licenza
 
-Il codice è **proprietario** e non è rilasciato come open source. Vedi [`LICENSE`](./LICENSE). L’uso del servizio hosted e gli abbonamenti sono regolati dai termini mostrati nell’applicazione e dagli accordi con Stripe Checkout.
+Codice **proprietario**. Vedi [`LICENSE`](./LICENSE). Uso del servizio hosted e abbonamenti: termini in-app e Stripe Checkout.
