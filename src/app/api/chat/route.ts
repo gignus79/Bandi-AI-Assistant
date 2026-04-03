@@ -14,10 +14,12 @@ import {
 } from "@/lib/usage";
 import { eq, asc } from "drizzle-orm";
 import { z } from "zod";
+import { parseVerbosity } from "@/lib/llm/verbosity";
 
 const zBody = z.object({
   bandoId: z.string().uuid(),
   message: z.string().min(1),
+  verbosity: z.enum(["concise", "balanced", "detailed"]).optional(),
 });
 
 export const maxDuration = 60;
@@ -35,7 +37,8 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const { bandoId, message } = parsed.data;
+    const { bandoId, message, verbosity: verbosityRaw } = parsed.data;
+    const verbosity = parseVerbosity(verbosityRaw);
 
     const bandoRows = await db.select().from(bandi).where(eq(bandi.id, bandoId)).limit(1);
     if (bandoRows.length === 0 || bandoRows[0].userId !== userId) {
@@ -97,7 +100,6 @@ export async function POST(req: NextRequest) {
       content: r.content,
     }));
 
-    await incrementMessageCount(userId);
     await incrementChatRateLimit(userId);
 
     await db.insert(chatMessages).values({
@@ -106,10 +108,11 @@ export async function POST(req: NextRequest) {
       content: message,
     });
 
-    const reply = await chatWithLLM(
+    const { text: reply, degraded } = await chatWithLLM(
       `${CHAT_SYSTEM_PROMPT}\n\nContesto:\n${systemContext}`,
       message,
-      history
+      history,
+      { verbosity }
     );
 
     await db.insert(chatMessages).values({
@@ -118,7 +121,15 @@ export async function POST(req: NextRequest) {
       content: reply,
     });
 
-    return NextResponse.json({ reply });
+    await incrementMessageCount(userId);
+
+    return NextResponse.json({
+      reply,
+      degraded,
+      warning: degraded
+        ? "Risposta in modalità limitata: i servizi AI non erano raggiungibili. Puoi riprovare tra poco."
+        : null,
+    });
   } catch (err) {
     console.error("Chat error:", err);
     const msg = err instanceof Error ? err.message : "Errore chat";

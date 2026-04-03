@@ -6,12 +6,15 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import { prepareAssistantMarkdownForDisplay } from "@/lib/chat-markdown";
+import { ResponseVerbositySelect } from "@/components/settings/ResponseVerbositySelect";
+import type { ResponseVerbosity } from "@/lib/llm/verbosity";
 
 interface Message {
   id: string;
   role: string;
   content: string;
   createdAt: string;
+  degraded?: boolean;
 }
 
 const QUICK_QUESTIONS = [
@@ -27,6 +30,8 @@ interface ChatPanelProps {
   bandoId: string;
   bandoTitle: string;
   initialMessages: Message[];
+  responseVerbosity: ResponseVerbosity;
+  onResponseVerbosityChange: (v: ResponseVerbosity) => void;
   onNewMessages: () => void;
   onLimitReached?: () => void;
 }
@@ -35,6 +40,8 @@ export function ChatPanel({
   bandoId,
   bandoTitle,
   initialMessages,
+  responseVerbosity,
+  onResponseVerbosityChange,
   onNewMessages,
   onLimitReached,
 }: ChatPanelProps) {
@@ -67,7 +74,7 @@ export function ChatPanel({
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bandoId, message: text }),
+        body: JSON.stringify({ bandoId, message: text, verbosity: responseVerbosity }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -89,6 +96,7 @@ export function ChatPanel({
           role: "assistant",
           content: data.reply,
           createdAt: new Date().toISOString(),
+          degraded: data.degraded === true,
         },
       ]);
     } finally {
@@ -110,8 +118,16 @@ export function ChatPanel({
 
   return (
     <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-card shadow-sm dark:border-white/10">
-      <div className="flex items-center justify-between border-b border-slate-200/80 bg-muted/30 px-4 py-3 dark:border-white/10 dark:bg-white/5">
-        <span className="text-sm font-semibold tracking-tight text-foreground">Chat</span>
+      <div className="flex flex-col gap-3 border-b border-slate-200/80 bg-muted/30 px-4 py-3 dark:border-white/10 dark:bg-white/5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+          <span className="text-sm font-semibold tracking-tight text-foreground">Chat</span>
+          <ResponseVerbositySelect
+            value={responseVerbosity}
+            onChange={onResponseVerbosityChange}
+            id="chat-verbosity"
+            className="sm:min-w-[280px]"
+          />
+        </div>
         {messages.length > 0 && (
           <button
             type="button"
@@ -161,25 +177,32 @@ export function ChatPanel({
                   {m.role === "user" ? (
                     <div className="whitespace-pre-wrap leading-relaxed">{m.content}</div>
                   ) : (
-                    <div
-                      className="chat-markdown prose prose-sm max-w-none sm:prose-base dark:prose-invert prose-headings:scroll-mt-4 prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-foreground prose-h2:mt-8 prose-h2:mb-4 prose-h2:border-b prose-h2:border-border/60 prose-h2:pb-2 prose-h3:mt-7 prose-h3:mb-3 prose-h4:mt-6 prose-h4:mb-2 prose-p:mb-4 prose-p:mt-0 prose-p:leading-[1.7] prose-p:text-foreground prose-p:first:mt-0 prose-ul:my-5 prose-ol:my-5 prose-ul:pl-1 prose-ol:pl-1 prose-li:my-2 prose-li:leading-relaxed prose-li:marker:text-primary prose-blockquote:my-5 prose-blockquote:border-l-4 prose-blockquote:border-violet-400/50 prose-blockquote:bg-muted/40 prose-blockquote:py-1 prose-blockquote:pl-4 prose-blockquote:italic dark:prose-blockquote:border-violet-400/40 dark:prose-blockquote:bg-white/5 prose-hr:my-10 prose-strong:text-foreground prose-em:text-foreground prose-a:text-primary prose-a:font-medium prose-a:underline prose-a:underline-offset-2 prose-table:my-6 prose-table:text-sm prose-th:bg-muted/60 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2"
-                    >
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm, remarkBreaks]}
-                        components={{
-                          a: ({ href, children }) => (
-                            <a href={href} target="_blank" rel="noopener noreferrer">
-                              {children}
-                            </a>
-                          ),
-                          p: ({ children }) => (
-                            <p className="mb-4 mt-0 last:mb-0 leading-[1.75]">{children}</p>
-                          ),
-                        }}
+                    <>
+                      <div
+                        className="chat-markdown prose prose-sm max-w-none sm:prose-base dark:prose-invert prose-headings:scroll-mt-4 prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-foreground prose-h2:mt-8 prose-h2:mb-4 prose-h2:border-b prose-h2:border-border/60 prose-h2:pb-2 prose-h3:mt-7 prose-h3:mb-3 prose-h4:mt-6 prose-h4:mb-2 prose-p:mb-4 prose-p:mt-0 prose-p:leading-[1.7] prose-p:text-foreground prose-p:first:mt-0 prose-ul:my-5 prose-ol:my-5 prose-ul:pl-1 prose-ol:pl-1 prose-li:my-2 prose-li:leading-relaxed prose-li:marker:text-primary prose-blockquote:my-5 prose-blockquote:border-l-4 prose-blockquote:border-violet-400/50 prose-blockquote:bg-muted/40 prose-blockquote:py-1 prose-blockquote:pl-4 prose-blockquote:italic dark:prose-blockquote:border-violet-400/40 dark:prose-blockquote:bg-white/5 prose-hr:my-10 prose-strong:text-foreground prose-em:text-foreground prose-a:text-primary prose-a:font-medium prose-a:underline prose-a:underline-offset-2 prose-table:my-6 prose-table:text-sm prose-th:bg-muted/60 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2"
                       >
-                        {prepareAssistantMarkdownForDisplay(m.content)}
-                      </ReactMarkdown>
-                    </div>
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm, remarkBreaks]}
+                          components={{
+                            a: ({ href, children }) => (
+                              <a href={href} target="_blank" rel="noopener noreferrer">
+                                {children}
+                              </a>
+                            ),
+                            p: ({ children }) => (
+                              <p className="mb-4 mt-0 last:mb-0 leading-[1.75]">{children}</p>
+                            ),
+                          }}
+                        >
+                          {prepareAssistantMarkdownForDisplay(m.content)}
+                        </ReactMarkdown>
+                      </div>
+                      {m.degraded && (
+                        <p className="mt-3 border-t border-amber-200/70 pt-3 text-xs leading-snug text-amber-900 dark:border-amber-500/35 dark:text-amber-100/90">
+                          Risposta in modalità limitata: i servizi AI non erano raggiungibili. Puoi riprovare tra poco.
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
               </li>

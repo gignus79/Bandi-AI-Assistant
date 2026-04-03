@@ -69,6 +69,4 @@ export async function parseFile(
   return Promise.resolve(result);
 }
 
-export { scrapeUrlWithPdfs } from "./url-scrape";
-export type { ScrapedUrlItem, UrlScrapeResult } from "./url-scrape";
 export type { ParsedDocument };

@@ -10,6 +10,8 @@ import { AnalysisResult } from "@/components/analysis/AnalysisResult";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { UpgradePromptModal } from "@/components/ui/UpgradePromptModal";
 import { AiDisclaimer } from "@/components/legal/AiDisclaimer";
+import { ResponseVerbositySelect } from "@/components/settings/ResponseVerbositySelect";
+import { readVerbosityFromStorage, type ResponseVerbosity } from "@/lib/llm/verbosity";
 
 interface BandoDetail {
   bando: { id: string; title: string; description: string | null };
@@ -38,6 +40,7 @@ export default function BandoDetailPage({
   const [copiedAnalysisId, setCopiedAnalysisId] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [upgradeMessage, setUpgradeMessage] = useState<string | undefined>();
+  const [responseVerbosity, setResponseVerbosity] = useState<ResponseVerbosity>("balanced");
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState<"upload" | "analyses" | "chat">(
@@ -58,6 +61,10 @@ export default function BandoDetailPage({
     fetchBando();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  useEffect(() => {
+    setResponseVerbosity(readVerbosityFromStorage());
+  }, []);
 
   useEffect(() => {
     const t = searchParams.get("tab");
@@ -122,6 +129,7 @@ export default function BandoDetailPage({
           bandoId: id,
           content,
           title: docTitle,
+          verbosity: responseVerbosity,
         }),
       });
       const result = await res.json();
@@ -290,6 +298,13 @@ export default function BandoDetailPage({
                 hasAnalyses={data.analyses.length > 0}
                 onDocumentsChange={fetchBando}
               />
+              <div className="mb-4 mt-4 max-w-md">
+                <ResponseVerbositySelect
+                  value={responseVerbosity}
+                  onChange={setResponseVerbosity}
+                  id="analysis-verbosity"
+                />
+              </div>
               <button
                 type="button"
                 onClick={handleStartAnalysisForAll}
@@ -408,6 +423,8 @@ export default function BandoDetailPage({
           bandoId={id}
           bandoTitle={data.bando.title}
           initialMessages={data.chatMessages}
+          responseVerbosity={responseVerbosity}
+          onResponseVerbosityChange={setResponseVerbosity}
           onNewMessages={() => fetchBando()}
           onLimitReached={() => {
             setShowUpgradeModal(true);

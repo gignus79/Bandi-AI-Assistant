@@ -14,6 +14,7 @@ import {
   incrementRateLimit,
 } from "@/lib/usage";
 import { eq } from "drizzle-orm";
+import { parseVerbosity } from "@/lib/llm/verbosity";
 
 const zBody = z.object({
   bandoId: z.string().uuid(),
@@ -21,6 +22,7 @@ const zBody = z.object({
   title: z.string().optional(),
   content: z.string().min(1),
   fileName: z.string().optional(),
+  verbosity: z.enum(["concise", "balanced", "detailed"]).optional(),
 });
 
 export const maxDuration = 120;
@@ -41,7 +43,9 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const { bandoId, documentId, title, content, fileName } = parsed.data;
+    const { bandoId, documentId, title, content, fileName, verbosity: verbosityRaw } =
+      parsed.data;
+    const verbosity = parseVerbosity(verbosityRaw);
 
     console.info("[analyze] start", {
       requestId,
@@ -79,7 +83,7 @@ export async function POST(req: NextRequest) {
     }
     await incrementRateLimit(userId, "analyze_minute");
 
-    const result = await analyzeDocumentWithLLM(content, fileName);
+    const result = await analyzeDocumentWithLLM(content, title ?? fileName, { verbosity });
     const isFallback = result.provider === "fallback";
 
     if (!isFallback) {
@@ -88,7 +92,6 @@ export async function POST(req: NextRequest) {
       console.warn("[analyze] fallback result — analysis quota not consumed", {
         requestId,
         bandoId,
-        reason: result.fallbackReason,
       });
     }
 
@@ -99,11 +102,11 @@ export async function POST(req: NextRequest) {
         documentId: documentId ?? null,
         title: title ?? null,
         summary: result.summary,
-        requirements: result.requirements ?? null,
-        deadlines: result.deadlines ?? null,
-        criteria: result.criteria ?? null,
-        insights: result.insights ?? null,
-        suggestions: result.suggestions ?? null,
+        requirements: null,
+        deadlines: null,
+        criteria: null,
+        insights: null,
+        suggestions: null,
         rawContent: result.rawContent ?? null,
       })
       .returning();
