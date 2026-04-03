@@ -31,6 +31,8 @@ function getIconForFile(fileName: string, sourceType?: string): LucideIcon {
     case "png":
     case "webp":
       return Image;
+    case "docx":
+      return FileText;
     case "txt":
     case "rtf":
     default:

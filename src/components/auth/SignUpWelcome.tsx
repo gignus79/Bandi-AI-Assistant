@@ -24,7 +24,7 @@ export function SignUpWelcome() {
           <span className="mt-0.5 text-violet-600 dark:text-violet-400" aria-hidden>
             ●
           </span>
-          <span>Caricamento documenti e URL con analisi AI</span>
+          <span>Caricamento documenti (PDF, Word, fogli di calcolo) e analisi AI</span>
         </li>
         <li className="flex gap-2">
           <span className="mt-0.5 text-violet-600 dark:text-violet-400" aria-hidden>

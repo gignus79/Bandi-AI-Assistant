@@ -98,7 +98,7 @@ function DashboardContent() {
               <BetaBadge />
             </div>
             <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-700 dark:text-muted-foreground">
-              Carica la documentazione dei bandi (PDF, Excel, URL o testo), avvia l’analisi e ottieni
+              Carica la documentazione dei bandi (PDF, Word, Excel, immagini o testo incollato), avvia l’analisi e ottieni
               sintesi, requisiti, scadenze, criteri di valutazione e suggerimenti con intelligenza artificiale.
               Crea bandi, condividi le analisi ed esporta in PDF o calendario. Per limiti e piani vedi{" "}
               <Link href="/dashboard/pricing" className="font-medium text-violet-700 underline underline-offset-2 hover:text-violet-900 dark:text-cyan-300 dark:hover:text-cyan-200">

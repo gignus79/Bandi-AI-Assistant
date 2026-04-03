@@ -87,7 +87,7 @@ export function OnboardingWizard() {
                 </Dialog.Title>
                 <Dialog.Description className="mt-1 text-sm text-slate-300">
                   {step === 0 && "Personalizza l’esperienza e segui la guida passo passo."}
-                  {step === 1 && "File, testo o URL: l’app importerà anche i PDF collegati sul sito."}
+                  {step === 1 && "File e testo incollato: carica solo la documentazione che ti serve per il bando."}
                   {step === 2 && "Ottieni requisiti, scadenze e criteri in un’unica analisi strutturata."}
                   {step === 3 && "Chiedi chiarimenti in chat usando i documenti caricati."}
                   {step === 4 &&
@@ -144,8 +144,8 @@ export function OnboardingWizard() {
                   <div>
                     <p className="text-sm font-medium text-white">Carica documenti</p>
                     <p className="mt-1 text-sm text-slate-400">
-                      Trascina PDF, Excel o immagini. Incolla testo oppure incolla l’URL della pagina del bando: visiteremo
-                      la pagina e le sottopagine dello stesso sito e importeremo i PDF trovati nei link.
+                      Trascina PDF, Word, Excel o immagini, oppure incolla il testo del bando. Così controlli quali file
+                      entrano nell&apos;analisi.
                     </p>
                   </div>
                 </div>

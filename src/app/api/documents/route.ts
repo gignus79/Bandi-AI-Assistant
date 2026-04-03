@@ -53,3 +53,27 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+/** Elimina tutti i documenti di un bando (verifica proprietà utente). */
+export async function DELETE(req: NextRequest) {
+  try {
+    const userId = await requireAuth();
+    await ensureUser(userId);
+    const bandoId = req.nextUrl.searchParams.get("bandoId");
+    if (!bandoId) {
+      return NextResponse.json({ error: "Parametro bandoId obbligatorio." }, { status: 400 });
+    }
+    const bandoRows = await db.select().from(bandi).where(eq(bandi.id, bandoId)).limit(1);
+    if (bandoRows.length === 0 || bandoRows[0].userId !== userId) {
+      return NextResponse.json({ error: "Bando non trovato." }, { status: 404 });
+    }
+    const removed = await db.delete(documents).where(eq(documents.bandoId, bandoId)).returning({ id: documents.id });
+    return NextResponse.json({ deleted: removed.length });
+  } catch (err) {
+    console.error("Documents bulk delete error:", err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Errore" },
+      { status: 500 }
+    );
+  }
+}

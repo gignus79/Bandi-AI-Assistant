@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function Footer({ className }: { className?: string }) {
   return (
     <footer
@@ -26,6 +28,18 @@ export function Footer({ className }: { className?: string }) {
           >
             Cookie policy
           </a>
+          <Link
+            href="/cancellazione-dati"
+            className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-md py-2 hover:text-foreground sm:min-h-0 sm:min-w-0"
+          >
+            Cancellazione dati
+          </Link>
+          <Link
+            href="/resi-rimborsi"
+            className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-md py-2 hover:text-foreground sm:min-h-0 sm:min-w-0"
+          >
+            Resi e rimborsi
+          </Link>
           <span className="text-xs text-muted-foreground">
             Conformità GDPR · Dati trattati in UE
           </span>

@@ -104,7 +104,7 @@ function PricingContent() {
           <strong className="text-slate-900 dark:text-foreground">
             analizzare la documentazione dei bandi
           </strong>{" "}
-          (PDF, fogli di calcolo, testo, immagini e URL): sintesi strutturate, requisiti, scadenze, criteri di
+          (PDF, Word, fogli di calcolo, testo, immagini): sintesi strutturate, requisiti, scadenze, criteri di
           valutazione e suggerimenti con intelligenza artificiale. Puoi{" "}
           <strong className="text-slate-900 dark:text-foreground">chattare in modo contestuale</strong> su ogni bando,
           esportare in Markdown o PDF e aggiungere le scadenze al calendario (.ics). Pensata per consulenti, PM e team

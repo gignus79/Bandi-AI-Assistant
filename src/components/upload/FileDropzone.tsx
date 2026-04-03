@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
+import { Loader2 } from "lucide-react";
 
 const IMAGE_MIME = ["image/jpeg", "image/png", "image/webp"] as const;
 const IMAGE_MAX_SIZE = 2 * 1024 * 1024; // 2MB
@@ -9,6 +10,7 @@ const IMAGE_MAX_FILES = 4;
 
 const ACCEPT = {
   "application/pdf": [".pdf"],
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
   "text/plain": [".txt"],
   "text/csv": [".csv"],
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
@@ -82,23 +84,37 @@ export function FileDropzone({ onParsed, onError }: FileDropzoneProps) {
   });
 
   return (
-    <div
-      {...getRootProps()}
-      className={`mt-2 cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition ${
-        isDragActive ? "border-primary bg-primary/5" : "border-muted-foreground/30 bg-muted/30"
-      } ${loading ? "pointer-events-none opacity-60" : ""}`}
-    >
-      <input {...getInputProps()} />
-      {loading ? (
-        <p className="text-sm text-muted-foreground">
-          Elaborazione file {progress.current}/{progress.total}...
-        </p>
-      ) : (
-        <p className="text-sm text-muted-foreground">
-          {isDragActive
-            ? "Rilascia i file qui"
-            : "Trascina file (PDF, TXT, CSV, XLSX, RTF) o immagini (JPG, PNG, WEBP — max 2 MB, max 4) o clicca"}
-        </p>
+    <div className="relative mt-2">
+      <div
+        {...getRootProps()}
+        className={`cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition ${
+          isDragActive ? "border-primary bg-primary/5" : "border-muted-foreground/30 bg-muted/30"
+        } ${loading ? "pointer-events-none min-h-[120px]" : ""}`}
+      >
+        <input {...getInputProps()} />
+        {!loading && (
+          <p className="text-sm text-muted-foreground">
+            {isDragActive
+              ? "Rilascia i file qui"
+              : "Trascina file (PDF, DOCX, TXT, CSV, XLSX, RTF) o immagini (JPG, PNG, WEBP — max 2 MB, max 4) o clicca"}
+          </p>
+        )}
+      </div>
+      {loading && (
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-lg border border-primary/25 bg-background/90 px-4 py-6 backdrop-blur-sm dark:bg-[#0a0612]/92"
+          role="status"
+          aria-live="polite"
+          aria-label="Elaborazione file in corso"
+        >
+          <Loader2 className="h-10 w-10 shrink-0 animate-spin text-primary" aria-hidden />
+          <div className="text-center">
+            <p className="text-sm font-medium text-foreground">Caricamento in corso</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Estrazione testo dal file {progress.current}/{progress.total}…
+            </p>
+          </div>
+        </div>
       )}
     </div>
   );

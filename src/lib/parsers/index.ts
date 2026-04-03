@@ -3,14 +3,16 @@ import { parsePdf } from "./pdf";
 import { parseXlsx } from "./xlsx";
 import { parseCsv } from "./csv";
 import { parseRtf } from "./rtf";
-import { scrapeUrlWithPdfs } from "./url-scrape";
 import { parseImage } from "./vision";
+import { parseDocx } from "./docx";
 
 const MIME_TO_PARSER: Record<
   string,
   (buffer: Buffer, mimeType?: string, fileName?: string) => Promise<ParsedDocument> | ParsedDocument
 > = {
   "application/pdf": (b) => parsePdf(b),
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": (b, _m, name) =>
+    parseDocx(b, name),
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": (
     b,
     _m,
@@ -39,6 +41,7 @@ const EXT_TO_MIME: Record<string, string> = {
   jpeg: "image/jpeg",
   png: "image/png",
   webp: "image/webp",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 };
 
 export async function parseFile(
@@ -57,12 +60,15 @@ export async function parseFile(
         mimeType: "text/plain",
       };
     }
+    if (fileName?.toLowerCase().endsWith(".docx")) {
+      return parseDocx(buffer, fileName);
+    }
     throw new Error(`Formato non supportato: ${mime || fileName || "sconosciuto"}`);
   }
   const result = MIME_TO_PARSER[mime](buffer, mime, fileName);
   return Promise.resolve(result);
 }
 
-export { scrapeUrlWithPdfs };
+export { scrapeUrlWithPdfs } from "./url-scrape";
 export type { ScrapedUrlItem, UrlScrapeResult } from "./url-scrape";
 export type { ParsedDocument };

@@ -21,7 +21,7 @@ Applicazione **Next.js** per professionisti e organizzazioni che devono leggere 
 
 | Area | Contenuto |
 |------|-----------|
-| **Ingestione** | PDF, fogli di calcolo, testo, immagini; più URL con crawling e individuazione PDF collegati |
+| **Ingestione** | PDF, DOCX, fogli di calcolo, testo, immagini |
 | **Analisi** | Sintesi, requisiti, scadenze, suggerimenti tramite modelli OpenAI / Anthropic |
 | **Chat** | Assistente sul singolo bando, rendering Markdown con formattazione curata |
 | **Export** | Markdown, PDF, calendario (.ics) |

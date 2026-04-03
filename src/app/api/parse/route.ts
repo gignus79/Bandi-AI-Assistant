@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { ensureUser } from "@/lib/db/users";
-import { parseFile, scrapeUrlWithPdfs } from "@/lib/parsers";
+import { parseFile } from "@/lib/parsers";
 
 export const maxDuration = 120;
 
@@ -13,28 +13,7 @@ export async function POST(req: NextRequest) {
     const contentType = req.headers.get("content-type") ?? "";
     if (contentType.includes("application/json")) {
       const body = await req.json();
-      const url = body.url as string | undefined;
       const pasted = body.text as string | undefined;
-      if (url) {
-        const scraped = await scrapeUrlWithPdfs(url);
-        const first = scraped.items[0];
-        return NextResponse.json({
-          items: scraped.items.map((it) => ({
-            text: it.text,
-            fileName: it.fileName,
-            mimeType: it.mimeType,
-            sourceUrl: it.sourceUrl,
-            sourceType: "url" as const,
-            kind: it.kind,
-          })),
-          text: first?.text,
-          fileName: first?.fileName,
-          mimeType: first?.mimeType,
-          sourceUrl: first?.sourceUrl,
-          sourceType: "url" as const,
-          meta: scraped.meta,
-        });
-      }
       if (typeof pasted === "string" && pasted.trim()) {
         return NextResponse.json({
           text: pasted.trim(),
@@ -42,7 +21,7 @@ export async function POST(req: NextRequest) {
         });
       }
       return NextResponse.json(
-        { error: "Fornisci url o text nel body JSON." },
+        { error: "Fornisci text nel body JSON." },
         { status: 400 }
       );
     }

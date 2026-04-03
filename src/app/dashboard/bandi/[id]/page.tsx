@@ -5,10 +5,9 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, FileText, Download, Loader2, Calendar, Copy, Check } from "lucide-react";
 import { FileDropzone } from "@/components/upload/FileDropzone";
-import { UrlInput } from "@/components/upload/UrlInput";
+import { SavedDocumentsList } from "@/components/documents/SavedDocumentsList";
 import { AnalysisResult } from "@/components/analysis/AnalysisResult";
 import { ChatPanel } from "@/components/chat/ChatPanel";
-import { FileTypeIcon } from "@/components/ui/FileTypeIcon";
 import { UpgradePromptModal } from "@/components/ui/UpgradePromptModal";
 import { AiDisclaimer } from "@/components/legal/AiDisclaimer";
 
@@ -113,26 +112,6 @@ export default function BandoDetailPage({
     fetchBando();
   };
 
-  const handleUrlDocuments = async (
-    items: { text: string; fileName?: string; mimeType?: string; sourceUrl?: string }[]
-  ) => {
-    for (const it of items) {
-      await fetch("/api/documents", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          bandoId: id,
-          fileName: it.fileName ?? "Documento da URL",
-          content: it.text,
-          mimeType: it.mimeType,
-          sourceType: "url" as const,
-          ...(it.sourceUrl ? { sourceUrl: it.sourceUrl } : {}),
-        }),
-      });
-    }
-    fetchBando();
-  };
-
   const runAnalysis = async (content: string, docTitle?: string) => {
     setAnalyzing(true);
     try {
@@ -198,13 +177,8 @@ export default function BandoDetailPage({
     }
   };
 
-  const handleFileOrUrlContent = (text: string, fileName?: string, isUrl?: boolean) => {
-    handleParsed(
-      text,
-      fileName ?? (isUrl ? "URL" : "Documento"),
-      isUrl ? "url" : "file",
-      null
-    );
+  const handleFileParsed = (text: string, fileName?: string) => {
+    void handleParsed(text, fileName ?? "Documento", "file");
   };
 
   if (loading || !data) {
@@ -282,17 +256,7 @@ export default function BandoDetailPage({
             <h2 className="mb-3 flex items-center gap-2 font-semibold">
               <FileText className="h-4 w-4" /> Carica file o incolla testo
             </h2>
-            <FileDropzone
-              onParsed={(text, fileName) => handleFileOrUrlContent(text, fileName, false)}
-              onError={(err) => alert(err)}
-            />
-            <div>
-              {/* Hint URL in UrlInput */}
-              <p className="sr-only">
-                Inserisci un URL: la pagina verrà scrapata e il contenuto aggiunto ai documenti per l’analisi.
-              </p>
-              <UrlInput onDocuments={handleUrlDocuments} onError={(err) => alert(err)} />
-            </div>
+            <FileDropzone onParsed={handleFileParsed} onError={(err) => alert(err)} />
             <div className="mt-4">
               <label className="mb-2 block text-sm font-medium text-foreground">
                 Oppure incolla il testo del bando
@@ -320,28 +284,12 @@ export default function BandoDetailPage({
           </div>
           {data.documents.length > 0 && (
             <div className="rounded-lg border border-border bg-card p-4">
-              <h3 className="mb-3 font-semibold text-foreground">Documenti salvati</h3>
-              <p className="mb-3 text-xs text-muted-foreground">
-                L’analisi viene eseguita una volta su tutti i documenti. Aggiungi file e/o URL, poi clicca &quot;Avvia analisi&quot;.
-              </p>
-              <ul className="mb-4 space-y-2">
-                {data.documents.map((d) => (
-                  <li
-                    key={d.id}
-                    className="flex items-center justify-between gap-3 rounded-md border border-border bg-muted/30 px-3 py-2"
-                  >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <FileTypeIcon fileName={d.fileName} sourceType={d.sourceType} />
-                      <span className="truncate text-sm text-foreground">{d.fileName}</span>
-                    </div>
-                    {data.analyses.length > 0 && (
-                      <span className="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary">
-                        Analizzato
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              <SavedDocumentsList
+                bandoId={id}
+                documents={data.documents}
+                hasAnalyses={data.analyses.length > 0}
+                onDocumentsChange={fetchBando}
+              />
               <button
                 type="button"
                 onClick={handleStartAnalysisForAll}
