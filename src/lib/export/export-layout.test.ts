@@ -47,10 +47,17 @@ describe("pdf and docx layout", () => {
     expect((latin.match(/\/Type \/Page\b/g) ?? []).length).toBeGreaterThan(1);
   });
 
-  it("renders a styled docx", async () => {
+  it("renders a styled docx with fixed column widths", async () => {
+    const { execFileSync } = await import("node:child_process");
+    const { writeFileSync } = await import("node:fs");
     const buffer = await markdownToDocxBuffer("Verifica aderenza", SAMPLE, { bandoTitle: "Per Chi Crea" });
     expect(buffer.subarray(0, 2).toString("utf8")).toBe("PK");
-    expect(buffer.length).toBeGreaterThan(2000);
+    const path = "/tmp/bandi-export-sample.docx";
+    writeFileSync(path, buffer);
+    const xml = execFileSync("unzip", ["-p", path, "word/document.xml"], { encoding: "utf8" });
+    expect(xml).toContain('w:type="dxa"');
+    expect(xml).not.toContain('w:type="pct"');
+    expect(xml).toContain('w:w="9906"');
   });
 });
 

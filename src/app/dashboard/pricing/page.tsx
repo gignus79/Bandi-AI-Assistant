@@ -151,7 +151,10 @@ function PricingContent() {
 
       <h1 className="text-2xl font-bold text-slate-900 dark:text-foreground">Piani e utilizzo</h1>
         {loading ? (
-        <p className="text-slate-600 dark:text-muted-foreground">Caricamento...</p>
+        <div className="flex items-center gap-2 text-slate-600 dark:text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin text-violet-600" aria-hidden />
+          Caricamento piani…
+        </div>
       ) : usage ? (
         <div className="rounded-lg border border-slate-200 bg-white/90 p-4 dark:border-border dark:bg-card">
           <p className="text-sm text-slate-700 dark:text-muted-foreground">
@@ -300,7 +303,7 @@ function PricingContent() {
 
 export default function PricingPage() {
   return (
-    <Suspense fallback={<p className="text-muted-foreground">Caricamento...</p>}>
+    <Suspense fallback={<p className="flex items-center gap-2 text-muted-foreground"><span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-violet-600 border-t-transparent" aria-hidden />Caricamento…</p>}>
       <PricingContent />
     </Suspense>
   );

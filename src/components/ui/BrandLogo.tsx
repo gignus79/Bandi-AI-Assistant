@@ -13,7 +13,7 @@ import { googleDriveDirectViewUrl } from "@/lib/media-url";
 const REMOTE_LOGO_FALLBACK =
   "https://www.giorgiolovecchio.com/wp-content/uploads/elementor/thumbs/Logo_MediaMatter_300x150-rfany5j6vb0rsiwht0gezcsi5tz8l3md77iqrr52k0.png";
 
-const LOCAL_LOGO = "/mediamatter-logo.png";
+const LOCAL_LOGO = "/mediamatter-mark.svg";
 
 function envTrim(key: string): string | null {
   const v = process.env[key];

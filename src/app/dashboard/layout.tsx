@@ -6,7 +6,7 @@ import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 import { Footer } from "@/components/layout/Footer";
 import { OnboardingGate } from "@/components/onboarding/OnboardingGate";
 import { UserGreeting } from "@/components/onboarding/UserGreeting";
-import { BrandLogo } from "@/components/ui/BrandLogo";
+import { WelcomeMediaMatterLogo } from "@/components/layout/WelcomeMediaMatterLogo";
 
 export default function DashboardLayout({
   children,
@@ -18,10 +18,12 @@ export default function DashboardLayout({
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2">
           <Link
             href="/dashboard"
-            className="flex flex-wrap items-center gap-2 text-xl font-semibold text-foreground sm:gap-3"
+            className="flex min-w-0 items-center gap-2.5 sm:gap-3"
           >
-            <BrandLogo heightClass="h-9" />
-            <span className="hidden sm:inline">Bandi AI Assistant</span>
+            <WelcomeMediaMatterLogo compact />
+            <span className="truncate bg-gradient-to-r from-cyan-500 via-blue-600 to-violet-600 bg-clip-text text-base font-semibold tracking-tight text-transparent sm:text-lg">
+              Bandi AI Assistant
+            </span>
           </Link>
           <nav className="flex flex-wrap items-center gap-1 sm:gap-2">
             <Link

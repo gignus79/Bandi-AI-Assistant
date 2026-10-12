@@ -317,7 +317,7 @@ export default function BandoDetailPage({
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-16">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        <p className="animate-pulse text-sm text-muted-foreground">Caricamento...</p>
+        <p className="text-sm text-muted-foreground">Caricamento del bando…</p>
       </div>
     );
   }
@@ -432,7 +432,7 @@ export default function BandoDetailPage({
           <div className="flex flex-col items-center gap-4 text-center">
             <div className="relative flex h-14 w-14 items-center justify-center">
               <Loader2 className="h-10 w-10 animate-spin text-primary" aria-hidden />
-              <span className="absolute inset-0 animate-ping rounded-full bg-primary/20 opacity-60" aria-hidden />
+              <span className="absolute inset-0 rounded-full bg-primary/15" aria-hidden />
             </div>
             <div>
               <p className="font-medium text-foreground">
@@ -442,16 +442,13 @@ export default function BandoDetailPage({
                     ? "Verifica di aderenza in corso"
                     : "Analisi in corso"}
               </p>
-              <p className="mt-1 animate-pulse text-sm text-muted-foreground">
+              <p className="mt-1 text-sm text-muted-foreground">
                 {filling
                   ? "Intercetto i dati di profilo e li inserisco nel modulo caricato…"
                   : matching
                     ? "Confronto la visura e gli altri documenti di profilo con il bando…"
                     : "L’AI sta leggendo i documenti e generando l’analisi…"}
               </p>
-            </div>
-            <div className="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-muted">
-              <div className="h-full min-w-[30%] animate-pulse rounded-full bg-primary" style={{ width: "40%" }} />
             </div>
           </div>
         </div>

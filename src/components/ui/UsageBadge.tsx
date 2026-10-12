@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
 
 interface UsageState {
   used: number;
@@ -34,7 +35,9 @@ export function UsageBadge() {
     return () => window.removeEventListener("usage-updated", onUsageUpdated);
   }, []);
 
-  if (!usage) return null;
+  if (!usage) {
+    return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-label="Caricamento utilizzo" />;
+  }
 
   const analysisLabel =
     usage.limit != null

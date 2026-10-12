@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/nextjs";
 import { WelcomeMediaMatterLogo } from "@/components/layout/WelcomeMediaMatterLogo";
 import { AiDisclaimer } from "@/components/legal/AiDisclaimer";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
@@ -71,18 +71,32 @@ export default function HomePage() {
                 </SignedOut>
               </p>
 
-              <div className="mt-8 flex flex-col items-center gap-4">
+              <div className="mt-8 flex flex-col items-center gap-3">
                 <SignedOut>
+                  <div className="flex w-full max-w-sm flex-col gap-3 sm:flex-row">
+                    <SignInButton mode="modal">
+                      <button
+                        type="button"
+                        className="flex-1 rounded-full border border-violet-300 bg-white px-6 py-3 text-sm font-semibold text-violet-800 shadow-sm transition hover:bg-violet-50 focus:outline-none focus:ring-2 focus:ring-violet-400/60 dark:border-violet-400/40 dark:bg-white/5 dark:text-violet-100 dark:hover:bg-white/10"
+                      >
+                        Accedi
+                      </button>
+                    </SignInButton>
+                    <SignUpButton mode="modal">
+                      <button
+                        type="button"
+                        className="flex-1 rounded-full border border-cyan-400/70 bg-cyan-50 px-6 py-3 text-sm font-semibold text-cyan-900 shadow-sm transition hover:bg-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-400/60 dark:border-cyan-300/40 dark:bg-cyan-400/10 dark:text-cyan-100 dark:hover:bg-cyan-400/20"
+                      >
+                        Registrati
+                      </button>
+                    </SignUpButton>
+                  </div>
                   <SignInButton mode="modal">
                     <button
                       type="button"
                       className="group relative w-full max-w-sm rounded-full bg-gradient-to-r from-violet-600 via-blue-600 to-cyan-500 px-8 py-3.5 text-sm font-semibold text-white shadow-[0_0_28px_rgba(139,92,246,0.55),0_0_56px_rgba(34,211,238,0.25)] transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-cyan-400/60 sm:text-base"
                     >
                       <span className="relative z-10">Free: 3 analisi al mese</span>
-                      <span
-                        className="absolute inset-0 rounded-full bg-white/10 opacity-0 transition group-hover:opacity-100"
-                        aria-hidden
-                      />
                     </button>
                   </SignInButton>
                 </SignedOut>

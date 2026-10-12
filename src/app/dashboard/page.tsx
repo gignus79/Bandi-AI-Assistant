@@ -3,7 +3,7 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Folder, FolderPlus, Pencil, PlusCircle, ScrollText, Trash2 } from "lucide-react";
+import { Folder, FolderPlus, Loader2, Pencil, PlusCircle, ScrollText, Trash2 } from "lucide-react";
 import { BrandLogo } from "@/components/ui/BrandLogo";
 
 interface Bando {
@@ -287,7 +287,7 @@ function DashboardContent() {
               disabled={creating || !newTitle.trim()}
               className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-600 via-blue-600 to-cyan-500 px-5 py-2 text-sm font-semibold text-white shadow-[0_0_24px_rgba(139,92,246,0.45)] transition hover:brightness-110 disabled:opacity-50"
             >
-              <PlusCircle className="h-4 w-4" />
+              {creating ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <PlusCircle className="h-4 w-4" />}
               Nuovo bando
             </button>
           </div>
@@ -307,14 +307,17 @@ function DashboardContent() {
             disabled={creatingFolder || !folderName.trim()}
             className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50 disabled:opacity-50 dark:border-white/15 dark:bg-white/5 dark:text-foreground"
           >
-            <FolderPlus className="h-4 w-4" aria-hidden />
+            {creatingFolder ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <FolderPlus className="h-4 w-4" aria-hidden />}
             Nuova cartella
           </button>
         </div>
       </div>
 
       {loading ? (
-        <p className="text-muted-foreground">Caricamento...</p>
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin text-violet-600" aria-hidden />
+          Caricamento dei bandi…
+        </div>
       ) : bandi.length === 0 && folders.length === 0 ? (
         <div className="rounded-[20px] border border-slate-200 bg-white/95 p-8 text-center text-slate-700 shadow-sm dark:border-white/10 dark:bg-[#0c0818]/60 dark:text-muted-foreground">
           <p className="mb-4">Non hai ancora creato bandi.</p>
@@ -364,7 +367,7 @@ function DashboardContent() {
 
 export default function DashboardPage() {
   return (
-    <Suspense fallback={<div className="space-y-8 p-4 text-muted-foreground">Caricamento...</div>}>
+    <Suspense fallback={<div className="flex items-center gap-3 p-4 text-muted-foreground"><span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-violet-600 border-t-transparent" aria-hidden />Caricamento…</div>}>
       <DashboardContent />
     </Suspense>
   );

@@ -11,6 +11,7 @@ import {
   ShadingType,
   Table,
   TableCell,
+  TableLayoutType,
   TableRow,
   TextRun,
   WidthType,
@@ -76,29 +77,50 @@ function cellsOf(line: string): string[] {
 }
 
 function tableFromRows(rows: string[][]): Table {
-  const width = Math.max(...rows.map((row) => row.length), 1);
+  const columns = Math.max(...rows.map((row) => row.length), 1);
   const padded = rows.map((row) => {
-    const next = row.slice(0, width);
-    while (next.length < width) next.push("");
+    const next = row.slice(0, columns);
+    while (next.length < columns) next.push("");
     return next;
   });
-  const share = Math.floor(100 / width);
+  const tableWidth = 9906;
+  const minCol = columns >= 6 ? 1200 : 1600;
+  const weights = Array.from({ length: columns }, (_, index) =>
+    Math.max(
+      8,
+      ...padded.map((row) => Math.min((row[index] ?? "").length, 42))
+    )
+  );
+  const weightSum = weights.reduce((sum, weight) => sum + weight, 0) || 1;
+  let widths = weights.map((weight) => Math.round((weight / weightSum) * tableWidth));
+  if (columns * minCol <= tableWidth) {
+    widths = widths.map((width) => Math.max(width, minCol));
+    const used = widths.reduce((sum, width) => sum + width, 0);
+    const extra = tableWidth - used;
+    const flex = widths.map((width) => Math.max(0, width - minCol));
+    const flexSum = flex.reduce((sum, width) => sum + width, 0) || 1;
+    widths = widths.map((width, index) => width + Math.round((extra * (flex[index] ?? 0)) / flexSum));
+  }
+  const drift = tableWidth - widths.reduce((sum, width) => sum + width, 0);
+  widths[widths.length - 1] = (widths[widths.length - 1] ?? 0) + drift;
+
   return new Table({
-    width: { size: 100, type: WidthType.PERCENTAGE },
+    layout: TableLayoutType.FIXED,
+    width: { size: tableWidth, type: WidthType.DXA },
+    columnWidths: widths,
     rows: padded.map(
       (row, rowIndex) =>
         new TableRow({
           tableHeader: rowIndex === 0,
-          cantSplit: true,
           children: row.map(
-            (cell) =>
+            (cell, columnIndex) =>
               new TableCell({
-                width: { size: share, type: WidthType.PERCENTAGE },
+                width: { size: widths[columnIndex] ?? minCol, type: WidthType.DXA },
                 shading: {
                   type: ShadingType.CLEAR,
                   fill: rowIndex === 0 ? HEADER_FILL : rowIndex % 2 === 0 ? ALT_FILL : "FFFFFF",
                 },
-                margins: { top: 60, bottom: 60, left: 80, right: 80 },
+                margins: { top: 80, bottom: 80, left: 100, right: 100 },
                 borders: {
                   top: thinBorder,
                   bottom: thinBorder,
@@ -107,8 +129,8 @@ function tableFromRows(rows: string[][]): Table {
                 },
                 children: [
                   new Paragraph({
-                    spacing: { after: 40 },
-                    children: runsFromInline(cell, rowIndex === 0 ? "FFFFFF" : INK),
+                    spacing: { before: 0, after: 0, line: 240 },
+                    children: runsFromInline(cell || " ", rowIndex === 0 ? "FFFFFF" : INK),
                   }),
                 ],
               })
