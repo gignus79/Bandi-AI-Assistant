@@ -6,6 +6,7 @@ import {
   Globe,
   Clipboard,
   File,
+  IdCard,
   Image,
   type LucideIcon,
 } from "lucide-react";
@@ -18,6 +19,10 @@ function getExtension(fileName: string): string {
 function getIconForFile(fileName: string, sourceType?: string): LucideIcon {
   if (sourceType === "url") return Globe;
   if (sourceType === "paste") return Clipboard;
+  if (sourceType === "context") {
+    if (/visura|camerale|registro/i.test(fileName)) return IdCard;
+    return FileText;
+  }
   const ext = getExtension(fileName);
   switch (ext) {
     case "pdf":

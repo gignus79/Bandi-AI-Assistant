@@ -24,9 +24,10 @@ const ACCEPT = {
 interface FileDropzoneProps {
   onParsed: (text: string, fileName?: string) => void;
   onError: (message: string) => void;
+  hint?: string;
 }
 
-export function FileDropzone({ onParsed, onError }: FileDropzoneProps) {
+export function FileDropzone({ onParsed, onError, hint }: FileDropzoneProps) {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
 
@@ -96,7 +97,8 @@ export function FileDropzone({ onParsed, onError }: FileDropzoneProps) {
           <p className="text-sm text-muted-foreground">
             {isDragActive
               ? "Rilascia i file qui"
-              : "Trascina file (PDF, DOCX, TXT, CSV, XLSX, RTF) o immagini (JPG, PNG, WEBP — max 2 MB, max 4) o clicca"}
+              : hint ??
+                "Trascina file (PDF, DOCX, TXT, CSV, XLSX, RTF) o immagini (JPG, PNG, WEBP — max 2 MB, max 4) o clicca"}
           </p>
         )}
       </div>

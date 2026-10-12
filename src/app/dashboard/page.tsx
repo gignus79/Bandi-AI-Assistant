@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, ScrollText } from "lucide-react";
 import { BrandLogo } from "@/components/ui/BrandLogo";
 import { BetaBadge } from "@/components/ui/BetaBadge";
 
@@ -98,8 +98,8 @@ function DashboardContent() {
               <BetaBadge />
             </div>
             <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-700 dark:text-muted-foreground">
-              Carica la documentazione dei bandi (PDF, Word, Excel, immagini o testo incollato), avvia l’analisi e ottieni
-              sintesi, requisiti, scadenze, criteri di valutazione e suggerimenti con intelligenza artificiale.
+              Carica la documentazione dei bandi e, se vuoi, la visura del soggetto per una verifica di aderenza.
+              Poi avvia l’analisi: sintesi, requisiti, scadenze, criteri e suggerimenti.
               Crea bandi, condividi le analisi ed esporta in PDF o calendario. Per limiti e piani vedi{" "}
               <Link href="/dashboard/pricing" className="font-medium text-violet-700 underline underline-offset-2 hover:text-violet-900 dark:text-cyan-300 dark:hover:text-cyan-200">
                 Abbonamento
@@ -149,15 +149,22 @@ function DashboardContent() {
                 href={`/dashboard/bandi/${b.id}`}
                 className="block rounded-[20px] border border-slate-200 bg-white p-4 text-slate-900 shadow-sm backdrop-blur-sm transition hover:border-violet-400/50 hover:shadow-md dark:border-white/10 dark:bg-[#0c0818]/65 dark:text-foreground dark:hover:border-violet-400/40 dark:hover:shadow-[0_0_28px_-8px_rgba(139,92,246,0.35)]"
               >
-                <h2 className="font-semibold text-slate-900 dark:text-foreground">{b.title}</h2>
-                {b.description && (
-                  <p className="mt-1 line-clamp-2 text-sm text-slate-600 dark:text-muted-foreground">
-                    {b.description}
-                  </p>
-                )}
-                <p className="mt-2 text-xs text-slate-500 dark:text-muted-foreground">
-                  {new Date(b.createdAt).toLocaleDateString("it-IT")}
-                </p>
+                <div className="flex items-start gap-3">
+                  <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-violet-300/50 bg-violet-500/10 text-violet-700 dark:border-violet-400/30 dark:text-violet-200">
+                    <ScrollText className="h-4 w-4" aria-hidden />
+                  </span>
+                  <div className="min-w-0">
+                    <h2 className="font-semibold text-slate-900 dark:text-foreground">{b.title}</h2>
+                    {b.description && (
+                      <p className="mt-1 line-clamp-2 text-sm text-slate-600 dark:text-muted-foreground">
+                        {b.description}
+                      </p>
+                    )}
+                    <p className="mt-2 text-xs text-slate-500 dark:text-muted-foreground">
+                      {new Date(b.createdAt).toLocaleDateString("it-IT")}
+                    </p>
+                  </div>
+                </div>
               </Link>
             </li>
           ))}

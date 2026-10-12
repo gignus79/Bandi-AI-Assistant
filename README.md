@@ -11,7 +11,7 @@
 [![Vercel](https://img.shields.io/badge/Vercel-deploy-000000?logo=vercel&logoColor=white)](https://vercel.com/)
 [![License](https://img.shields.io/badge/License-Proprietary-8b5cf6)](./LICENSE)
 
-Applicazione **Next.js** per professionisti e organizzazioni che devono leggere bandi complessi: carica documenti o URL, ottieni **analisi strutturate** (requisiti, scadenze, criteri) e **chat contestuale** con output leggibile. Include autenticazione, piani di utilizzo e abbonamenti.
+Applicazione **Next.js** per professionisti e organizzazioni che devono leggere bandi complessi: carica i documenti del bando e, se serve, la visura del soggetto, ottieni **analisi strutturate** (requisiti, scadenze, criteri), una **verifica di aderenza** e **chat contestuale**. Include autenticazione, piani di utilizzo e abbonamenti.
 
 **MediaMatter** · Giorgio Lovecchio
 
@@ -23,6 +23,7 @@ Applicazione **Next.js** per professionisti e organizzazioni che devono leggere 
 |------|-----------|
 | **Ingestione** | PDF, DOCX, fogli di calcolo, testo, immagini |
 | **Analisi** | Sintesi, requisiti, scadenze, suggerimenti tramite modelli OpenAI / Anthropic |
+| **Aderenza** | Confronto tra visura (e altri documenti di profilo) e requisiti del bando |
 | **Chat** | Assistente sul singolo bando, rendering Markdown con formattazione curata |
 | **Export** | Markdown, PDF, calendario (.ics) |
 | **Business** | Clerk (auth), Stripe (checkout abbonamenti), limiti d’uso e piani |

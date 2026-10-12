@@ -9,6 +9,7 @@ import { PLANS } from "@/lib/stripe";
 
 const TAGS = [
   "Upload multiplo",
+  "Verifica visura",
   "Sintesi & requisiti",
   "Chat contestuale",
   "Export calendario",
@@ -41,7 +42,7 @@ export default function HomePage() {
                 </span>
               </h1>
               <p className="mt-4 text-center text-sm text-slate-600 sm:text-base dark:text-violet-100/75">
-                Upload documenti · Analisi strutturata · Chat AI contestuale · Export calendario
+                Upload documenti · Verifica visura · Analisi strutturata · Chat AI contestuale · Export calendario
               </p>
 
               <p className="mt-5 text-center text-sm leading-relaxed text-slate-700 dark:text-violet-100/85">

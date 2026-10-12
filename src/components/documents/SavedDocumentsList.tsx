@@ -11,6 +11,9 @@ interface SavedDocumentsListProps {
   documents: SavedDocRow[];
   hasAnalyses: boolean;
   onDocumentsChange: () => void;
+  title?: string;
+  description?: string;
+  bulkRole?: "bando" | "context";
 }
 
 export function SavedDocumentsList({
@@ -18,6 +21,9 @@ export function SavedDocumentsList({
   documents,
   hasAnalyses,
   onDocumentsChange,
+  title = "Documenti salvati",
+  description = "L'analisi del bando usa questi file. Passa il puntatore su un documento per un'anteprima del testo estratto.",
+  bulkRole,
 }: SavedDocumentsListProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
@@ -88,7 +94,9 @@ export function SavedDocumentsList({
     if (!confirm(`Eliminare tutti i ${documents.length} documenti salvati?`)) return;
     setBulkDeleting(true);
     try {
-      const res = await fetch(`/api/documents?bandoId=${encodeURIComponent(bandoId)}`, {
+      const params = new URLSearchParams({ bandoId });
+      if (bulkRole) params.set("role", bulkRole);
+      const res = await fetch(`/api/documents?${params.toString()}`, {
         method: "DELETE",
       });
       if (!res.ok) {
@@ -106,7 +114,7 @@ export function SavedDocumentsList({
   return (
     <div>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h3 className="font-semibold text-foreground">Documenti salvati</h3>
+        <h3 className="font-semibold text-foreground">{title}</h3>
         {documents.length > 0 && (
           <button
             type="button"
@@ -118,10 +126,7 @@ export function SavedDocumentsList({
           </button>
         )}
       </div>
-      <p className="mb-3 text-xs text-muted-foreground">
-        L&apos;analisi viene eseguita una volta su tutti i documenti. Aggiungi file o testo incollato, poi avvia
-        l&apos;analisi. Passa il puntatore su un documento per un&apos;anteprima del testo estratto.
-      </p>
+      <p className="mb-3 text-xs text-muted-foreground">{description}</p>
       <ul className="mb-4 space-y-2">
         {documents.map((d) => (
           <li key={d.id} className="list-none">

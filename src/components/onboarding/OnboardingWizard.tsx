@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { ChevronRight, FileText, LineChart, MessageCircle, Sparkles, X } from "lucide-react";
+import { ChevronRight, FileText, LineChart, MessageCircle, Scale, Sparkles, X } from "lucide-react";
 
 const STORAGE_KEY = "bandi_onboarding_v1";
 
@@ -175,7 +175,22 @@ export function OnboardingWizard() {
                     <p className="text-sm font-medium text-white">Chatta sul bando</p>
                     <p className="mt-1 text-sm text-slate-400">
                       Nella scheda Chat puoi fare domande puntuali. L’assistente usa i documenti che hai caricato per
-                      questo bando.
+                      questo bando, compresi visura e documenti di profilo se li hai caricati.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {step === 4 && (
+              <div className="space-y-3 rounded-2xl border border-white/10 bg-black/20 p-4">
+                <div className="flex gap-3">
+                  <Scale className="mt-0.5 h-5 w-5 shrink-0 text-cyan-300" />
+                  <div>
+                    <p className="text-sm font-medium text-white">Verifica di aderenza</p>
+                    <p className="mt-1 text-sm text-slate-400">
+                      Allega la visura camerale e, se vuoi, altri documenti del soggetto (statuto, bilancio, CV).
+                      L&apos;app li confronta con il bando e segnala requisiti soddisfatti, mancanti o non verificabili.
                     </p>
                   </div>
                 </div>

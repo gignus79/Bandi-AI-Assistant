@@ -3,7 +3,7 @@ import { requireAuth } from "@/lib/auth";
 import { ensureUser } from "@/lib/db/users";
 import { db } from "@/lib/db";
 import { bandi, documents } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { z } from "zod";
 
 const zBody = z.object({
@@ -11,7 +11,7 @@ const zBody = z.object({
   fileName: z.string().min(1),
   content: z.string().min(1),
   mimeType: z.string().optional(),
-  sourceType: z.enum(["file", "url", "paste"]),
+  sourceType: z.enum(["file", "url", "paste", "context"]),
   sourceUrl: z.string().url().optional(),
 });
 
@@ -67,7 +67,19 @@ export async function DELETE(req: NextRequest) {
     if (bandoRows.length === 0 || bandoRows[0].userId !== userId) {
       return NextResponse.json({ error: "Bando non trovato." }, { status: 404 });
     }
-    const removed = await db.delete(documents).where(eq(documents.bandoId, bandoId)).returning({ id: documents.id });
+    const role = req.nextUrl.searchParams.get("role");
+    const where =
+      role === "context"
+        ? and(eq(documents.bandoId, bandoId), eq(documents.sourceType, "context"))
+        : role === "bando"
+          ? and(eq(documents.bandoId, bandoId), ne(documents.sourceType, "context"))
+          : role
+            ? null
+            : eq(documents.bandoId, bandoId);
+    if (!where) {
+      return NextResponse.json({ error: "Parametro role non valido." }, { status: 400 });
+    }
+    const removed = await db.delete(documents).where(where).returning({ id: documents.id });
     return NextResponse.json({ deleted: removed.length });
   } catch (err) {
     console.error("Documents bulk delete error:", err);
