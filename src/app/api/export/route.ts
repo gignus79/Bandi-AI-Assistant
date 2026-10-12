@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { analyses, bandi } from "@/lib/db/schema";
+import { normalizeExportMarkdown } from "@/lib/export/normalize-markdown";
+import { withInsufficientFollowup } from "@/lib/llm/match-prompt";
 import { eq } from "drizzle-orm";
 
 export async function GET(req: NextRequest) {
@@ -37,12 +39,14 @@ export async function GET(req: NextRequest) {
     }
     const bandoTitle = bandoRows[0].title;
 
-    const content = analysis.rawContent ?? analysis.summary;
+    const content = withInsufficientFollowup(
+      normalizeExportMarkdown(analysis.rawContent ?? analysis.summary)
+    );
     const title = analysis.title ?? `Analisi - ${bandoTitle}`;
     const safeTitle = title.replace(/[^a-zA-Z0-9\u00C0-\u024F\s-]/g, "").replace(/\s+/g, "-").slice(0, 80);
 
     if (format === "md" || format === "markdown") {
-      const body = `# ${title}\n\nBando: ${bandoTitle}\n\n${content}`;
+      const body = `# ${title}\n\n**Bando:** ${bandoTitle}\n\n---\n\n${content}\n`;
       return new NextResponse(body, {
         headers: {
           "Content-Type": "text/markdown; charset=utf-8",
@@ -53,7 +57,7 @@ export async function GET(req: NextRequest) {
 
     if (format === "docx") {
       const { markdownToDocxBuffer } = await import("@/lib/docx/markdown-to-docx");
-      const buffer = await markdownToDocxBuffer(title, content);
+      const buffer = await markdownToDocxBuffer(title, content, { bandoTitle });
       return new NextResponse(new Uint8Array(buffer), {
         headers: {
           "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -63,18 +67,9 @@ export async function GET(req: NextRequest) {
     }
 
     if (format === "pdf") {
-      const { jsPDF } = await import("jspdf");
-      const { drawMarkdownToPdf } = await import("@/lib/pdf/markdown-to-pdf");
-      const doc = new jsPDF();
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(18);
-      doc.text(title, 20, 20);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(10);
-      doc.text(`Bando: ${bandoTitle}`, 20, 28);
-      drawMarkdownToPdf(doc, content, 20, 36);
-      const buffer = Buffer.from(doc.output("arraybuffer"));
-      return new NextResponse(buffer, {
+      const { renderAnalysisPdf } = await import("@/lib/pdf/markdown-to-pdf");
+      const buffer = renderAnalysisPdf({ title, bandoTitle, markdown: content });
+      return new NextResponse(new Uint8Array(buffer), {
         headers: {
           "Content-Type": "application/pdf",
           "Content-Disposition": `attachment; filename="${safeTitle}.pdf"`,

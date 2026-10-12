@@ -1,181 +1,266 @@
-import type { jsPDF } from "jspdf";
+import { jsPDF } from "jspdf";
+import { normalizeExportMarkdown, pdfSafeText } from "@/lib/export/normalize-markdown";
 
-const MARGIN = 20;
 const PAGE_WIDTH = 210;
-const MAX_WIDTH = PAGE_WIDTH - 2 * MARGIN;
-const LINE_HEIGHT = 6;
-const LINE_HEIGHT_HEADING = 8;
+const MARGIN = 16;
+const CONTENT_WIDTH = PAGE_WIDTH - MARGIN * 2;
+const PAGE_BOTTOM = 282;
+const BODY = 10.5;
+const BODY_LEADING = 5.2;
 
-type JsPDFDoc = InstanceType<typeof jsPDF>;
+const VIOLET: [number, number, number] = [91, 33, 182];
+const INK: [number, number, number] = [30, 27, 46];
+const MUTED: [number, number, number] = [100, 96, 120];
+const HEADER_FILL: [number, number, number] = [91, 33, 182];
+const ALT_FILL: [number, number, number] = [245, 243, 255];
+const GRID: [number, number, number] = [221, 214, 254];
 
-function getHeadingLevel(line: string): number {
-  const m = line.match(/^(#{1,6})\s+/);
-  return m ? m[1].length : 0;
+type Doc = InstanceType<typeof jsPDF>;
+
+function paintFooter(doc: Doc): void {
+  const pages = doc.getNumberOfPages();
+  for (let page = 1; page <= pages; page += 1) {
+    doc.setPage(page);
+    doc.setDrawColor(...GRID);
+    doc.setLineWidth(0.2);
+    doc.line(MARGIN, 286, PAGE_WIDTH - MARGIN, 286);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(...MUTED);
+    doc.text("Bandi AI Assistant", MARGIN, 291);
+    doc.text(`${page} / ${pages}`, PAGE_WIDTH - MARGIN, 291, { align: "right" });
+  }
 }
 
-function stripHeading(line: string): string {
-  return line.replace(/^#{1,6}\s+/, "").trim();
+function newPage(doc: Doc): number {
+  doc.addPage();
+  return 22;
 }
 
-function isListLine(line: string): boolean {
-  return /^\s*[-*]\s+/.test(line) || /^\s*\d+\.\s+/.test(line);
+function room(doc: Doc, y: number, needed: number): number {
+  if (y + needed <= PAGE_BOTTOM) return y;
+  return newPage(doc);
 }
 
-function stripListMarker(line: string): string {
-  return line.replace(/^\s*[-*]\s+/, "").replace(/^\s*\d+\.\s+/, "").trim();
+function headingSize(level: number): number {
+  if (level <= 1) return 16;
+  if (level === 2) return 13;
+  return 11.5;
 }
 
-function isTableRow(line: string): boolean {
-  return line.trim().startsWith("|") && line.trim().endsWith("|");
-}
-
-/** Draw line: strip markdown inline (**, *, `) and wrap text. */
-function drawFormattedLineSimple(
-  doc: JsPDFDoc,
-  line: string,
+function drawWrapped(
+  doc: Doc,
+  text: string,
   x: number,
   y: number,
-  fontSize: number,
-  maxWidth: number
+  width: number,
+  size: number,
+  style: "normal" | "bold",
+  leading: number,
+  color: [number, number, number]
 ): number {
-  const clean = line
-    .replace(/\*\*(.+?)\*\*/g, "$1")
-    .replace(/\*(.+?)\*/g, "$1")
-    .replace(/`([^`]+)`/g, "$1");
-  doc.setFontSize(fontSize);
-  doc.setFont("helvetica", "normal");
-  const wrapped = doc.splitTextToSize(clean, maxWidth);
-  let currentY = y;
-  for (const w of wrapped) {
-    if (currentY > 280) {
-      doc.addPage();
-      currentY = 20;
-    }
-    doc.text(w, x, currentY);
-    currentY += LINE_HEIGHT;
+  doc.setFont("helvetica", style);
+  doc.setFontSize(size);
+  doc.setTextColor(...color);
+  const lines = doc.splitTextToSize(pdfSafeText(text), Math.max(8, width)) as string[];
+  let cursor = y;
+  for (const line of lines) {
+    cursor = room(doc, cursor, leading);
+    doc.setFont("helvetica", style);
+    doc.setFontSize(size);
+    doc.setTextColor(...color);
+    doc.text(line, x, cursor);
+    cursor += leading;
   }
-  return wrapped.length * LINE_HEIGHT;
+  return cursor;
 }
 
-export function drawMarkdownToPdf(doc: JsPDFDoc, markdown: string, startX: number, startY: number): number {
-  let y = startY;
-  const blocks = markdown.split(/\n\n+/);
-  const tableRows: string[] = [];
-
-  for (const block of blocks) {
-    const lines = block.split("\n");
-    if (lines.length === 0) continue;
-
-    const first = lines[0];
-    const headingLevel = getHeadingLevel(first);
-    if (headingLevel > 0) {
-      if (tableRows.length > 0) {
-        y = drawTable(doc, tableRows, startX, y, MAX_WIDTH);
-        tableRows.length = 0;
-      }
-      const fontSize = headingLevel === 1 ? 16 : headingLevel === 2 ? 14 : 12;
-      doc.setFontSize(fontSize);
-      doc.setFont("helvetica", "bold");
-      const title = stripHeading(first);
-      const wrapped = doc.splitTextToSize(title, MAX_WIDTH);
-      for (const w of wrapped) {
-        if (y > 280) {
-          doc.addPage();
-          y = 20;
-        }
-        doc.text(w, startX, y);
-        y += LINE_HEIGHT_HEADING;
-      }
-      y += 2;
-      for (let i = 1; i < lines.length; i++) {
-        const line = lines[i];
-        if (y > 280) {
-          doc.addPage();
-          y = 20;
-        }
-        y += drawFormattedLineSimple(doc, line, startX, y, 10, MAX_WIDTH) + 1;
-      }
-      continue;
-    }
-
-    if (isTableRow(first)) {
-      tableRows.push(...lines);
-      continue;
-    }
-
-    if (tableRows.length > 0) {
-      y = drawTable(doc, tableRows, startX, y, MAX_WIDTH);
-      tableRows.length = 0;
-    }
-
-    for (const line of lines) {
-      if (y > 280) {
-        doc.addPage();
-        y = 20;
-      }
-      if (isListLine(line)) {
-        const text = stripListMarker(line);
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "normal");
-        doc.text("• ", startX, y);
-        const wrapped = doc.splitTextToSize(text, MAX_WIDTH - 6);
-        for (const w of wrapped) {
-          doc.text(w, startX + 6, y);
-          y += LINE_HEIGHT;
-        }
-        y += 1;
-      } else {
-        y += drawFormattedLineSimple(doc, line, startX, y, 10, MAX_WIDTH) + 2;
-      }
-    }
-    y += 2;
-  }
-
-  if (tableRows.length > 0) {
-    y = drawTable(doc, tableRows, startX, y, MAX_WIDTH);
-  }
-
-  return y;
+function isSeparatorLine(line: string): boolean {
+  const core = line.trim().replace(/^\|/, "").replace(/\|$/, "");
+  return core.split("|").every((cell) => /^:?-{3,}:?$/.test(cell.trim()));
 }
 
-function drawTable(doc: JsPDFDoc, rows: string[], x: number, y: number, maxWidth: number): number {
-  const isSeparator = (line: string) => /^\|?\s*[-:|\s]+\|?$/.test(line.trim());
-  const dataRows = rows.filter((r) => !isSeparator(r));
-  if (dataRows.length === 0) return y;
-
-  const cells = dataRows.map((row) =>
-    row
+function tableMatrix(block: string): string[][] {
+  const lines = block
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("|"));
+  const data = lines.filter((line) => !isSeparatorLine(line));
+  const matrix = data.map((line) =>
+    line
+      .replace(/^\|/, "")
+      .replace(/\|$/, "")
       .split("|")
-      .map((c) => c.trim().replace(/\*\*/g, ""))
-      .filter(Boolean)
+      .map((cell) => pdfSafeText(cell.trim()))
   );
-  const colCount = Math.max(...cells.map((c) => c.length), 1);
-  const colWidth = Math.min(maxWidth / colCount, 50);
-  const fontSize = 9;
-  doc.setFontSize(fontSize);
-  doc.setFont("helvetica", "normal");
+  const width = Math.max(1, ...matrix.map((row) => row.length));
+  return matrix.map((row) => {
+    const next = row.slice(0, width);
+    while (next.length < width) next.push("");
+    return next;
+  });
+}
 
-  for (const row of cells) {
-    if (y > 275) {
-      doc.addPage();
-      y = 20;
-    }
-    let xOffset = x;
-    let rowHeight = 6;
-    for (let i = 0; i < colCount; i++) {
-      const cell = row[i] ?? "";
-      const wrapped = doc.splitTextToSize(cell, colWidth - 2);
-      const cellHeight = wrapped.length * (LINE_HEIGHT - 1) + 2;
-      rowHeight = Math.max(rowHeight, cellHeight);
-    }
-    for (let i = 0; i < colCount; i++) {
-      const cell = row[i] ?? "";
-      const wrapped = doc.splitTextToSize(cell, colWidth - 2);
-      doc.rect(xOffset, y - fontSize * 0.35, colWidth, rowHeight);
-      doc.text(wrapped, xOffset + 2, y + 2);
-      xOffset += colWidth;
-    }
-    y += rowHeight + 1;
+function columnWidths(matrix: string[][], total: number): number[] {
+  const cols = matrix[0]?.length ?? 1;
+  const weights = Array.from({ length: cols }, (_, index) => {
+    const longest = Math.max(8, ...matrix.map((row) => Math.min((row[index] ?? "").length, 48)));
+    return longest;
+  });
+  const sum = weights.reduce((totalWeight, weight) => totalWeight + weight, 0) || 1;
+  let widths = weights.map((weight) => (weight / sum) * total);
+  const min = cols >= 5 ? 16 : 22;
+  if (cols * min <= total) {
+    widths = widths.map((width) => Math.max(width, min));
+    const used = widths.reduce((acc, width) => acc + width, 0);
+    const extra = total - used;
+    const flex = widths.map((width) => Math.max(0, width - min));
+    const flexSum = flex.reduce((acc, width) => acc + width, 0) || 1;
+    widths = widths.map((width, index) => width + (extra * (flex[index] ?? 0)) / flexSum);
+  } else {
+    widths = Array.from({ length: cols }, () => total / cols);
   }
-  return y + 4;
+  const drift = total - widths.reduce((acc, width) => acc + width, 0);
+  const last = widths.length - 1;
+  widths[last] = (widths[last] ?? 0) + drift;
+  return widths;
+}
+
+function drawTable(doc: Doc, matrix: string[][], y: number): number {
+  if (matrix.length === 0) return y;
+  const widths = columnWidths(matrix, CONTENT_WIDTH);
+  const fontSize = matrix[0]!.length >= 5 ? 7.5 : 8.5;
+  const leading = 3.5;
+  let cursor = y;
+
+  const rowHeight = (row: string[]): number => {
+    doc.setFontSize(fontSize);
+    let height = 6;
+    row.forEach((cell, index) => {
+      const lines = doc.splitTextToSize(cell || " ", Math.max(8, (widths[index] ?? 20) - 3.2)) as string[];
+      height = Math.max(height, lines.length * leading + 2.2);
+    });
+    return height;
+  };
+
+  const paintRow = (row: string[], top: number, header: boolean, alt: boolean): number => {
+    const height = rowHeight(row);
+    let x = MARGIN;
+    row.forEach((cell, index) => {
+      const width = widths[index] ?? 20;
+      if (header) doc.setFillColor(...HEADER_FILL);
+      else if (alt) doc.setFillColor(...ALT_FILL);
+      else doc.setFillColor(255, 255, 255);
+      doc.setDrawColor(...GRID);
+      doc.setLineWidth(0.15);
+      doc.rect(x, top, width, height, "FD");
+      doc.setFont("helvetica", header ? "bold" : "normal");
+      doc.setFontSize(fontSize);
+      const color: [number, number, number] = header ? [255, 255, 255] : INK;
+      doc.setTextColor(...color);
+      const lines = doc.splitTextToSize(cell || " ", Math.max(8, width - 3.2)) as string[];
+      let textY = top + 3.6;
+      for (const line of lines) {
+        doc.text(line, x + 1.6, textY);
+        textY += leading;
+      }
+      x += width;
+    });
+    return top + height;
+  };
+
+  const header = matrix[0] ?? [];
+  cursor = room(doc, cursor, rowHeight(header) + 2);
+  cursor = paintRow(header, cursor, true, false);
+  for (let index = 1; index < matrix.length; index += 1) {
+    const row = matrix[index] ?? [];
+    const height = rowHeight(row);
+    if (cursor + height > PAGE_BOTTOM) {
+      cursor = newPage(doc);
+      cursor = paintRow(header, cursor, true, false);
+    }
+    cursor = paintRow(row, cursor, false, index % 2 === 0);
+  }
+  return cursor + 5;
+}
+
+function drawBodyLine(doc: Doc, line: string, y: number): number {
+  const list = line.match(/^(\s*)(?:[-*]|\d+\.)\s+(.*)$/);
+  if (list) {
+    const text = list[2] ?? "";
+    y = room(doc, y, BODY_LEADING);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(BODY);
+    doc.setTextColor(...VIOLET);
+    doc.text("-", MARGIN + 1, y);
+    return drawWrapped(doc, text, MARGIN + 6, y, CONTENT_WIDTH - 6, BODY, "normal", BODY_LEADING, INK);
+  }
+  return drawWrapped(doc, line, MARGIN, y, CONTENT_WIDTH, BODY, "normal", BODY_LEADING, INK) + 0.4;
+}
+
+function drawBlocks(doc: Doc, markdown: string, startY: number): void {
+  let y = startY;
+  const blocks = normalizeExportMarkdown(markdown).split(/\n\n+/);
+  for (const block of blocks) {
+    const lines = block.split("\n").filter((line) => line.trim().length > 0);
+    if (lines.length === 0) continue;
+    const first = lines[0] ?? "";
+    if (first.trim().startsWith("|")) {
+      y = drawTable(doc, tableMatrix(block), y);
+      continue;
+    }
+    const heading = first.match(/^(#{1,6})\s+(.*)$/);
+    if (heading) {
+      const level = heading[1]?.length ?? 2;
+      y = room(doc, y, headingSize(level) + 4);
+      y += level === 2 ? 2.5 : 1;
+      y = drawWrapped(
+        doc,
+        heading[2] ?? "",
+        MARGIN,
+        y,
+        CONTENT_WIDTH,
+        headingSize(level),
+        "bold",
+        level === 1 ? 7 : 5.8,
+        VIOLET
+      );
+      doc.setDrawColor(...GRID);
+      doc.setLineWidth(level <= 2 ? 0.45 : 0.2);
+      doc.line(MARGIN, y - 1.2, MARGIN + (level === 1 ? 46 : 24), y - 1.2);
+      y += 2.2;
+      for (const line of lines.slice(1)) y = drawBodyLine(doc, line, y);
+      y += 1.2;
+      continue;
+    }
+    for (const line of lines) y = drawBodyLine(doc, line, y);
+    y += 1.4;
+  }
+}
+
+export function renderAnalysisPdf(input: {
+  title: string;
+  bandoTitle: string;
+  markdown: string;
+}): Buffer {
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  doc.setFillColor(...VIOLET);
+  doc.rect(0, 0, PAGE_WIDTH, 10, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(255, 255, 255);
+  doc.text("Bandi AI Assistant", MARGIN, 6.5);
+
+  let y = 20;
+  y = drawWrapped(doc, input.title, MARGIN, y, CONTENT_WIDTH, 18, "bold", 7.4, INK);
+  y += 1;
+  y = drawWrapped(doc, `Bando: ${input.bandoTitle}`, MARGIN, y, CONTENT_WIDTH, 10, "normal", 4.8, MUTED);
+  y += 1.5;
+  doc.setDrawColor(...VIOLET);
+  doc.setLineWidth(0.7);
+  doc.line(MARGIN, y, MARGIN + 34, y);
+  y += 7;
+  drawBlocks(doc, input.markdown, y);
+  paintFooter(doc);
+  return Buffer.from(doc.output("arraybuffer"));
 }

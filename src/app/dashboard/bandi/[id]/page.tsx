@@ -797,11 +797,30 @@ export default function BandoDetailPage({
                       </a>
                     </div>
                   </div>
-                  {selectedAnalysis.title === MATCH_ANALYSIS_TITLE &&
-                    parseMatchVerdict(selectedAnalysis.rawContent ?? "") === "insufficiente" && (
-                      <p className="mb-4 rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm text-amber-950 dark:bg-amber-950/40 dark:text-amber-50">
-                        I dati non bastano per un giudizio completo di ammissibilità. Qui sotto c’è comunque il confronto con quello che hai caricato.
-                      </p>
+                  {parseMatchVerdict(selectedAnalysis.rawContent ?? "") === "insufficiente" && (
+                      <div className="mb-4 rounded-xl border border-amber-400 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-300/50 dark:bg-amber-950/40 dark:text-amber-50">
+                        <p className="font-semibold">I dati non bastano per un giudizio completo di ammissibilità.</p>
+                        <p className="mt-1 leading-relaxed">
+                          Carica gli atti che mancano (bando integrale, visura camerale, statuto o bilancio) e rilancia la verifica di aderenza: il nuovo risultato aggiorna questo quadro.
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab("upload")}
+                            className="rounded-md bg-amber-800 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-900"
+                          >
+                            Carica altri documenti
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void runMatch()}
+                            disabled={busy}
+                            className="rounded-md border border-amber-700 bg-white px-3 py-1.5 text-sm font-medium text-amber-950 hover:bg-amber-100 disabled:opacity-50 dark:bg-transparent dark:text-amber-50"
+                          >
+                            Rilancia verifica di aderenza
+                          </button>
+                        </div>
+                      </div>
                     )}
                   <AnalysisResult content={selectedAnalysis.rawContent ?? selectedAnalysis.summary} />
                 </div>

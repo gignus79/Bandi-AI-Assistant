@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { analyses, bandi, documents } from "@/lib/db/schema";
 import { partitionDocuments } from "@/lib/documents/roles";
 import { matchProfileWithLLM } from "@/lib/llm/client";
-import { MATCH_ANALYSIS_TITLE, parseMatchVerdict } from "@/lib/llm/match-prompt";
+import { MATCH_ANALYSIS_TITLE, parseMatchVerdict, withInsufficientFollowup } from "@/lib/llm/match-prompt";
 import { parseVerbosity } from "@/lib/llm/verbosity";
 import { getPlanForUser } from "@/lib/subscription";
 import {
@@ -102,6 +102,7 @@ export async function POST(req: NextRequest) {
       gaps,
     });
     const isFallback = result.provider === "fallback";
+    const rawContent = withInsufficientFollowup(result.rawContent);
     if (!isFallback) {
       await incrementAnalysisCount(userId);
     }
@@ -117,7 +118,7 @@ export async function POST(req: NextRequest) {
         criteria: null,
         insights: null,
         suggestions: null,
-        rawContent: result.rawContent,
+        rawContent,
       })
       .returning();
 
@@ -137,7 +138,7 @@ export async function POST(req: NextRequest) {
       rawContent: inserted.rawContent,
       createdAt: inserted.createdAt,
       provider: result.provider,
-      verdict: parseMatchVerdict(result.rawContent),
+      verdict: parseMatchVerdict(rawContent),
       warning: [
         gaps.length > 0
           ? `${gaps.join(" ")} La verifica è stata eseguita comunque con i dati disponibili.`

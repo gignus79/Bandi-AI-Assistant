@@ -32,7 +32,8 @@ Valori di Esito: Soddisfatto | Non soddisfatto | Non verificabile | Non applicab
 ## Documenti ancora utili
 
 ## Nota
-Ricorda che decide l'ente erogatore e che vanno riletti i testi ufficiali.`;
+Ricorda che decide l'ente erogatore e che vanno riletti i testi ufficiali.
+Se l'esito è "Dati insufficienti", indica quali documenti mancano e invita a caricarli e a rilanciare la verifica di aderenza.`;
 
 export type MatchVerdict = "aderente" | "parziale" | "non_aderente" | "insufficiente";
 
@@ -44,6 +45,15 @@ export function parseMatchVerdict(markdown: string): MatchVerdict | null {
   if (line.includes("parzialmente")) return "parziale";
   if (/\baderente\b/.test(line)) return "aderente";
   return null;
+}
+
+export const INSUFFICIENT_DATA_FOLLOWUP = `## Prossimo passo
+I dati non bastano per un giudizio completo di ammissibilità. Carica gli atti mancanti (bando integrale, visura camerale, statuto o bilancio) e rilancia la verifica di aderenza per ottenere un risultato aggiornato.`;
+
+export function withInsufficientFollowup(markdown: string): string {
+  if (parseMatchVerdict(markdown) !== "insufficiente") return markdown;
+  if (/rilancia la verifica di aderenza/i.test(markdown)) return markdown;
+  return `${markdown.trim()}\n\n${INSUFFICIENT_DATA_FOLLOWUP}\n`;
 }
 
 export function verdictLabel(verdict: MatchVerdict): string {
