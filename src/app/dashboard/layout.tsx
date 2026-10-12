@@ -6,6 +6,7 @@ import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 import { Footer } from "@/components/layout/Footer";
 import { OnboardingGate } from "@/components/onboarding/OnboardingGate";
 import { UserGreeting } from "@/components/onboarding/UserGreeting";
+import { AiConsentGate } from "@/components/legal/AiConsentGate";
 import { WelcomeMediaMatterLogo } from "@/components/layout/WelcomeMediaMatterLogo";
 
 export default function DashboardLayout({
@@ -13,6 +14,7 @@ export default function DashboardLayout({
 }: { children: React.ReactNode }) {
   return (
     <OnboardingGate>
+    <AiConsentGate />
     <div className="relative flex min-h-screen flex-col bg-transparent">
       <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-xl dark:border-violet-500/20 dark:bg-[#0a0612]/80 dark:shadow-[0_0_40px_-12px_rgba(139,92,246,0.15)]">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2">

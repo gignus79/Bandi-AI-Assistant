@@ -7,11 +7,20 @@ import {
   type ResponseVerbosity,
 } from "@/lib/llm/verbosity";
 import {
+  ANALYSIS_SYSTEM_PROMPT,
+  buildAnalysisUserPrompt,
+} from "@/lib/llm/prompts";
+import {
   FILL_SYSTEM_PROMPT,
   buildFillFallback,
   buildFillUserPrompt,
   fieldsFromProfileCards,
 } from "@/lib/llm/fill-prompt";
+import {
+  INSIGHTS_SYSTEM_PROMPT,
+  buildInsightsFallback,
+  buildInsightsUserPrompt,
+} from "@/lib/llm/insights-prompt";
 import {
   MATCH_SYSTEM_PROMPT,
   buildMatchFallback,
@@ -129,16 +138,9 @@ export async function analyzeDocumentWithLLM(
   const verbosity = options?.verbosity ?? "balanced";
   const maxTokens = ANALYSIS_MAX_TOKENS[verbosity];
   const excerpt = content.slice(0, 120_000);
-
-  const system = `Sei un esperto di bandi pubblici e contributi in Italia. Analizza il documento e produci:
-1) Un riassunto esecutivo (max 200 parole) con scadenze, importi, destinatari, requisiti principali.
-2) Un'analisi strutturata in markdown con sezioni: Scadenze, Requisiti, Documentazione, Criticità, Suggerimenti operativi.
-Usa italiano chiaro e professionale.`;
-
-  const user = `Titolo: ${title ?? "Documento"}\n\n---\n\n${excerpt}`;
   const generated = await generateText({
-    system,
-    messages: [{ role: "user", content: user }],
+    system: ANALYSIS_SYSTEM_PROMPT,
+    messages: [{ role: "user", content: buildAnalysisUserPrompt(excerpt, title) }],
     maxTokens,
   });
 
@@ -270,4 +272,30 @@ export async function fillFormWithLLM(input: {
     }),
     provider: "fallback",
   };
+}
+
+export async function insightsWithLLM(input: {
+  bandoTitle: string;
+  bandoDocs: { fileName: string; content: string }[];
+  contextDocs: { fileName: string; content: string }[];
+  verbosity?: ResponseVerbosity;
+}): Promise<{ summary: string; rawContent: string; provider: "anthropic" | "openai" | "fallback" }> {
+  const maxTokens = ANALYSIS_MAX_TOKENS[input.verbosity ?? "balanced"];
+  const generated = await generateText({
+    system: INSIGHTS_SYSTEM_PROMPT,
+    messages: [{ role: "user", content: buildInsightsUserPrompt(input) }],
+    maxTokens,
+  });
+  if (generated.ok) {
+    return {
+      summary: firstParagraph(generated.text),
+      rawContent: generated.text,
+      provider: generated.provider,
+    };
+  }
+  const excerpt = [...input.bandoDocs, ...input.contextDocs]
+    .map((doc) => doc.content)
+    .join("\n")
+    .slice(0, 2000);
+  return { ...buildInsightsFallback(excerpt), provider: "fallback" };
 }

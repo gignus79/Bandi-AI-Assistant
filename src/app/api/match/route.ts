@@ -3,6 +3,7 @@ import { randomUUID } from "crypto";
 import { z } from "zod";
 import { requireAuth } from "@/lib/auth";
 import { ensureUser } from "@/lib/db/users";
+import { requireAiConsent } from "@/lib/consent";
 import { db } from "@/lib/db";
 import { analyses, bandi, documents } from "@/lib/db/schema";
 import { partitionDocuments } from "@/lib/documents/roles";
@@ -31,6 +32,8 @@ export async function POST(req: NextRequest) {
   try {
     const userId = await requireAuth();
     await ensureUser(userId);
+    const consent = await requireAiConsent(userId);
+    if (consent) return consent;
 
     const body = await req.json();
     const parsed = zBody.safeParse(body);

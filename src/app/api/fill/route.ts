@@ -4,6 +4,7 @@ import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 import { requireAuth } from "@/lib/auth";
 import { ensureUser } from "@/lib/db/users";
+import { requireAiConsent } from "@/lib/consent";
 import { db } from "@/lib/db";
 import { analyses, bandi, documents } from "@/lib/db/schema";
 import { isFormDocument, partitionDocuments } from "@/lib/documents/roles";
@@ -32,6 +33,8 @@ export async function POST(req: NextRequest) {
   try {
     const userId = await requireAuth();
     await ensureUser(userId);
+    const consent = await requireAiConsent(userId);
+    if (consent) return consent;
     const parsed = zBody.safeParse(await req.json());
     if (!parsed.success) {
       return NextResponse.json(

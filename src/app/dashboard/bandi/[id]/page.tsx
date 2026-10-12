@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeft, FileText, Download, Loader2, Calendar, Copy, Check, Scale, MessagesSquare, IdCard, ScrollText, Pencil, PenLine } from "lucide-react";
+import { ArrowLeft, FileText, Download, Loader2, Calendar, Copy, Check, Scale, MessagesSquare, IdCard, ScrollText, Pencil, PenLine, BarChart3 } from "lucide-react";
 import { FileDropzone } from "@/components/upload/FileDropzone";
 import { SavedDocumentsList } from "@/components/documents/SavedDocumentsList";
 import { AnalysisResult } from "@/components/analysis/AnalysisResult";
@@ -17,6 +17,9 @@ import { readVerbosityFromStorage, type ResponseVerbosity } from "@/lib/llm/verb
 import { isBandoDocument, isContextDocument, isFormDocument } from "@/lib/documents/roles";
 import { MATCH_ANALYSIS_TITLE, parseMatchVerdict } from "@/lib/llm/match-prompt";
 import { FILL_ANALYSIS_TITLE } from "@/lib/llm/fill-prompt";
+import { INSIGHTS_TITLE, parseInsightCharts } from "@/lib/llm/insights-prompt";
+import { InsightCharts } from "@/components/analysis/InsightCharts";
+import { notifyIfConsentRequired } from "@/lib/consent-client";
 
 interface BandoDetail {
   bando: { id: string; title: string; description: string | null };
@@ -45,6 +48,7 @@ export default function BandoDetailPage({
   const [contextText, setContextText] = useState("");
   const [formText, setFormText] = useState("");
   const [filling, setFilling] = useState(false);
+  const [charting, setCharting] = useState(false);
   const [matching, setMatching] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
@@ -150,6 +154,7 @@ export default function BandoDetailPage({
         }),
       });
       const result = await res.json();
+      if (notifyIfConsentRequired(result)) return;
       if (result.error && res.status === 403) {
         setShowUpgradeModal(true);
         setUpgradeMessage(
@@ -228,6 +233,7 @@ export default function BandoDetailPage({
         body: JSON.stringify({ bandoId: id, documentId, verbosity: responseVerbosity }),
       });
       const result = await res.json();
+      if (notifyIfConsentRequired(result)) return;
       if (result.error && res.status === 403) {
         setShowUpgradeModal(true);
         setUpgradeMessage(
@@ -264,6 +270,7 @@ export default function BandoDetailPage({
         body: JSON.stringify({ bandoId: id, verbosity: responseVerbosity }),
       });
       const result = await res.json();
+      if (notifyIfConsentRequired(result)) return;
       if (result.error && res.status === 403) {
         setShowUpgradeModal(true);
         setUpgradeMessage(
@@ -288,6 +295,43 @@ export default function BandoDetailPage({
       alert(error instanceof Error ? error.message : "Errore di rete durante la verifica.");
     } finally {
       setMatching(false);
+    }
+  };
+
+  const runInsights = async () => {
+    setCharting(true);
+    try {
+      const res = await fetch("/api/insights", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bandoId: id, verbosity: responseVerbosity }),
+      });
+      const result = await res.json();
+      if (notifyIfConsentRequired(result)) return;
+      if (result.error && res.status === 403) {
+        setShowUpgradeModal(true);
+        setUpgradeMessage(
+          result.limit != null
+            ? `Hai raggiunto il limite di ${result.limit} analisi questo mese. Passa a un piano superiore per continuare.`
+            : undefined
+        );
+        alert(result.error);
+        return;
+      }
+      if (!res.ok) {
+        alert(result.error ?? "Errore nella generazione dei grafici");
+        return;
+      }
+      if (result.warning) alert(result.warning);
+      if (result.id) {
+        setSelectedAnalysisId(result.id);
+        setActiveTab("analyses");
+        fetchBando();
+      }
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Errore di rete durante i grafici.");
+    } finally {
+      setCharting(false);
     }
   };
 
@@ -326,7 +370,7 @@ export default function BandoDetailPage({
   const bandoDocs = data.documents.filter((doc) => isBandoDocument(doc.sourceType));
   const contextDocs = data.documents.filter((doc) => isContextDocument(doc.sourceType));
   const formDocs = data.documents.filter((doc) => isFormDocument(doc.sourceType));
-  const busy = analyzing || matching || filling;
+  const busy = analyzing || matching || filling || charting;
 
   return (
     <div className="space-y-6">
@@ -438,16 +482,20 @@ export default function BandoDetailPage({
               <p className="font-medium text-foreground">
                 {filling
                   ? "Compilazione del modulo in corso"
-                  : matching
-                    ? "Verifica di aderenza in corso"
-                    : "Analisi in corso"}
+                  : charting
+                    ? "Suggerimenti e grafici in corso"
+                    : matching
+                      ? "Verifica di aderenza in corso"
+                      : "Analisi in corso"}
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
                 {filling
                   ? "Intercetto i dati di profilo e li inserisco nel modulo caricato…"
-                  : matching
-                    ? "Confronto la visura e gli altri documenti di profilo con il bando…"
-                    : "L’AI sta leggendo i documenti e generando l’analisi…"}
+                  : charting
+                    ? "Cerco numeri e scadenze nei documenti per disegnare i grafici…"
+                    : matching
+                      ? "Confronto la visura e gli altri documenti di profilo con il bando…"
+                      : "L’AI sta leggendo i documenti e generando l’analisi…"}
               </p>
             </div>
           </div>
@@ -515,12 +563,30 @@ export default function BandoDetailPage({
                     {analyzing ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                        <span className="animate-pulse">Analisi in corso...</span>
+                        <span>Analisi in corso...</span>
                       </>
                     ) : (
                       <>
                         <FileText className="h-4 w-4" aria-hidden />
                         Avvia analisi sui documenti del bando
+                      </>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void runInsights()}
+                    disabled={busy}
+                    className="inline-flex shrink-0 items-center gap-2 rounded-md border border-violet-700 bg-white px-4 py-2 text-sm font-medium text-violet-800 hover:bg-violet-50 disabled:opacity-50 dark:bg-transparent dark:text-violet-100"
+                  >
+                    {charting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                        Grafici in elaborazione...
+                      </>
+                    ) : (
+                      <>
+                        <BarChart3 className="h-4 w-4" aria-hidden />
+                        Suggerimenti e grafici
                       </>
                     )}
                   </button>
@@ -717,6 +783,8 @@ export default function BandoDetailPage({
                       <Scale className="h-3.5 w-3.5" aria-hidden />
                     ) : a.title?.startsWith(FILL_ANALYSIS_TITLE) ? (
                       <PenLine className="h-3.5 w-3.5" aria-hidden />
+                    ) : a.title === INSIGHTS_TITLE ? (
+                      <BarChart3 className="h-3.5 w-3.5" aria-hidden />
                     ) : (
                       <FileText className="h-3.5 w-3.5" aria-hidden />
                     )}
@@ -819,7 +887,16 @@ export default function BandoDetailPage({
                         </div>
                       </div>
                     )}
-                  <AnalysisResult content={selectedAnalysis.rawContent ?? selectedAnalysis.summary} />
+                  {selectedAnalysis.title === INSIGHTS_TITLE && (
+                    <InsightCharts charts={parseInsightCharts(selectedAnalysis.rawContent ?? "").charts} />
+                  )}
+                  <AnalysisResult
+                    content={
+                      selectedAnalysis.title === INSIGHTS_TITLE
+                        ? parseInsightCharts(selectedAnalysis.rawContent ?? "").prose
+                        : (selectedAnalysis.rawContent ?? selectedAnalysis.summary)
+                    }
+                  />
                 </div>
               )}
             </>

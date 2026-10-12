@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Loader2 } from "lucide-react";
+import { notifyIfConsentRequired } from "@/lib/consent-client";
 
 const IMAGE_MIME = ["image/jpeg", "image/png", "image/webp"] as const;
 const IMAGE_MAX_SIZE = 2 * 1024 * 1024; // 2MB
@@ -58,6 +59,10 @@ export function FileDropzone({ onParsed, onError, hint }: FileDropzoneProps) {
           const res = await fetch("/api/parse", { method: "POST", body: fd });
           const data = await res.json();
           if (!res.ok) {
+            if (notifyIfConsentRequired(data)) {
+              onError(data.error ?? "Serve il consenso per elaborare i file con l'intelligenza artificiale.");
+              continue;
+            }
             onError(data.error ?? `Errore upload: ${file.name}`);
             continue;
           }

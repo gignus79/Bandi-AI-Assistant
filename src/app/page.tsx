@@ -23,12 +23,6 @@ export default function HomePage() {
 
       <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-16 sm:px-6">
         <WelcomeMediaMatterLogo />
-        <div className="mb-6 flex flex-wrap items-center justify-center gap-2">
-          <span className="inline-flex items-center gap-2 rounded-full border border-violet-400/25 bg-violet-100/90 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-violet-800 shadow-sm backdrop-blur-md dark:border-violet-400/25 dark:bg-violet-950/40 dark:text-violet-200/90 dark:shadow-[0_0_24px_rgba(139,92,246,0.25)] sm:text-xs">
-            <span className="h-1.5 w-1.5 rounded-full bg-cyan-500 shadow-[0_0_10px_#22d3ee] dark:bg-cyan-400" aria-hidden />
-            AI Assistant
-          </span>
-        </div>
 
         <div className="w-full max-w-xl p-[1px] sm:max-w-2xl">
           <div className="rounded-[28px] bg-gradient-to-br from-cyan-400/35 via-violet-500/30 to-fuchsia-500/35 p-[1px] shadow-[0_0_60px_-12px_rgba(139,92,246,0.45)] dark:from-cyan-400/35">
@@ -44,31 +38,8 @@ export default function HomePage() {
               </p>
 
               <p className="mt-5 text-center text-sm leading-relaxed text-slate-700 dark:text-violet-100/85">
-                <span className="font-semibold text-slate-900 dark:text-white">Piani e utilizzo</span>
-                {" — "}
                 <strong>Free</strong>: fino a {PLANS.free.analysesPerMonth} analisi al mese e{" "}
-                {PLANS.free.messagesTotal} messaggi di chat totali. <strong>Pro</strong>:{" "}
-                {PLANS.pro.analysesPerMonth} analisi/mese e {PLANS.pro.messagesPerMonth} messaggi/mese.{" "}
-                <strong>Unlimited</strong>: analisi senza limite mensile e {PLANS.unlimited.messagesPerMonth}{" "}
-                messaggi/mese.{" "}
-                <SignedIn>
-                  <Link
-                    href="/dashboard/pricing"
-                    className="font-medium text-violet-700 underline decoration-violet-400/80 underline-offset-2 hover:text-violet-900 dark:text-cyan-300 dark:hover:text-cyan-200"
-                  >
-                    Apri Abbonamento
-                  </Link>
-                </SignedIn>
-                <SignedOut>
-                  <SignInButton mode="modal">
-                    <button
-                      type="button"
-                      className="font-medium text-violet-700 underline decoration-violet-400/80 underline-offset-2 hover:text-violet-900 dark:text-cyan-300 dark:hover:text-cyan-200"
-                    >
-                      Accedi per i piani
-                    </button>
-                  </SignInButton>
-                </SignedOut>
+                {PLANS.free.messagesTotal} messaggi di chat totali.
               </p>
 
               <div className="mt-8 flex flex-col items-center gap-3">
@@ -110,10 +81,6 @@ export default function HomePage() {
                 </SignedIn>
               </div>
 
-              <p className="mt-6 text-center text-[11px] leading-relaxed text-slate-600 sm:text-xs dark:text-violet-300/80">
-                Servizio in versione Beta: funzionalità e limiti possono cambiare; in caso di problemi contattaci dal
-                link Feedback nell’app.
-              </p>
               <ul className="mt-6 flex flex-wrap justify-center gap-2 sm:gap-3" aria-label="Funzionalità">
                 {TAGS.map((label) => (
                   <li

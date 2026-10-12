@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import { prepareAssistantMarkdownForDisplay } from "@/lib/chat-markdown";
+import { notifyIfConsentRequired } from "@/lib/consent-client";
 import { ResponseVerbositySelect } from "@/components/settings/ResponseVerbositySelect";
 import type { ResponseVerbosity } from "@/lib/llm/verbosity";
 
@@ -80,6 +81,7 @@ export function ChatPanel({
       if (!res.ok) {
         setMessages((prev) => prev.slice(0, -1));
         setInput(text);
+        if (notifyIfConsentRequired(data)) return;
         if (res.status === 403) onLimitReached?.();
         const detail =
           data.used != null && data.limit != null
@@ -121,6 +123,9 @@ export function ChatPanel({
       <div className="flex flex-col gap-3 border-b border-slate-200/80 bg-muted/30 px-4 py-3 dark:border-white/10 dark:bg-white/5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
           <span className="text-sm font-semibold tracking-tight text-foreground">Chat</span>
+          <span className="text-[11px] leading-snug text-muted-foreground">
+            Risposte generate da intelligenza artificiale. Verifica sempre sul documento originale.
+          </span>
           <ResponseVerbositySelect
             value={responseVerbosity}
             onChange={onResponseVerbosityChange}

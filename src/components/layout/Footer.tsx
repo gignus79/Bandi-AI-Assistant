@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { bandiAppInboundLinks } from "@/content/site-marketing";
 
 export function Footer({ className }: { className?: string }) {
+  const newsletter = bandiAppInboundLinks.find((link) => link.label === "Newsletter");
   return (
     <footer
       className={`mt-auto border-t border-border bg-muted/30 px-3 py-5 sm:px-4 sm:py-6 ${className ?? ""}`}
@@ -28,6 +30,14 @@ export function Footer({ className }: { className?: string }) {
           >
             Cookie policy
           </a>
+          <a
+            href={newsletter?.href ?? "https://www.giorgiolovecchio.com/newsletter"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-md py-2 font-medium text-violet-700 hover:text-foreground dark:text-cyan-300 sm:min-h-0 sm:min-w-0"
+          >
+            Iscriviti alla newsletter
+          </a>
           <Link
             href="/cancellazione-dati"
             className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-md py-2 hover:text-foreground sm:min-h-0 sm:min-w-0"
@@ -40,9 +50,6 @@ export function Footer({ className }: { className?: string }) {
           >
             Resi e rimborsi
           </Link>
-          <span className="text-xs text-muted-foreground">
-            Conformità GDPR · Dati trattati in UE
-          </span>
         </nav>
       </div>
     </footer>

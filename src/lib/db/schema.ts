@@ -11,6 +11,8 @@ export const users = pgTable("users", {
   email: text("email"),
   /** Prima app (slug) in cui l’utente è stato attribuito — utile con login unificato */
   signupAppSlug: text("signup_app_slug"),
+  /** Consenso a elaborazione AI e trasferimento dei documenti ai fornitori dei modelli. */
+  aiConsentAt: timestamp("ai_consent_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

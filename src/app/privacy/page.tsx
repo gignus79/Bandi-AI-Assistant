@@ -32,6 +32,10 @@ export default function PrivacyPage() {
         <p>
           Hai diritto ad accesso, rettifica, cancellazione, limitazione, portabilità e opposizione. Per esercitarli o per reclami scrivi al titolare o alla tua autorità di controllo (Garante Privacy).
         </p>
+        <h2 className="text-lg font-semibold mt-4">Intelligenza artificiale</h2>
+        <p>
+          Analisi, chat, verifica di aderenza, compilazione moduli e grafici sono generati da modelli di Anthropic e, se configurato, OpenAI. I documenti caricati, che possono contenere dati personali, sono inviati a questi fornitori solo dopo il tuo consenso e solo per produrre l&apos;output richiesto. L&apos;output non è una decisione sull&apos;ammissibilità a un bando.
+        </p>
         <h2 className="text-lg font-semibold mt-4">Sicurezza</h2>
         <p>
           Adottiamo misure tecniche e organizzative adeguate per proteggere i dati (accesso autenticato, trasmissione sicura, hosting in ambito UE o con garanzie equivalenti).

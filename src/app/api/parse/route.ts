@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { ensureUser } from "@/lib/db/users";
+import { requireAiConsent } from "@/lib/consent";
 import { parseFile } from "@/lib/parsers";
 
 export const maxDuration = 120;
@@ -9,6 +10,8 @@ export async function POST(req: NextRequest) {
   try {
     const userId = await requireAuth();
     await ensureUser(userId);
+    const consent = await requireAiConsent(userId);
+    if (consent) return consent;
 
     const contentType = req.headers.get("content-type") ?? "";
     if (contentType.includes("application/json")) {
