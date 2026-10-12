@@ -11,7 +11,7 @@ const zBody = z.object({
   fileName: z.string().min(1),
   content: z.string().min(1),
   mimeType: z.string().optional(),
-  sourceType: z.enum(["file", "url", "paste", "context"]),
+  sourceType: z.enum(["file", "url", "paste", "context", "form"]),
   sourceUrl: z.string().url().optional(),
 });
 
@@ -72,8 +72,14 @@ export async function DELETE(req: NextRequest) {
       role === "context"
         ? and(eq(documents.bandoId, bandoId), eq(documents.sourceType, "context"))
         : role === "bando"
-          ? and(eq(documents.bandoId, bandoId), ne(documents.sourceType, "context"))
-          : role
+          ? and(
+              eq(documents.bandoId, bandoId),
+              ne(documents.sourceType, "context"),
+              ne(documents.sourceType, "form")
+            )
+          : role === "form"
+            ? and(eq(documents.bandoId, bandoId), eq(documents.sourceType, "form"))
+            : role
             ? null
             : eq(documents.bandoId, bandoId);
     if (!where) {

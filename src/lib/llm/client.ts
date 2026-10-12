@@ -7,6 +7,12 @@ import {
   type ResponseVerbosity,
 } from "@/lib/llm/verbosity";
 import {
+  FILL_SYSTEM_PROMPT,
+  buildFillFallback,
+  buildFillUserPrompt,
+  fieldsFromProfileCards,
+} from "@/lib/llm/fill-prompt";
+import {
   MATCH_SYSTEM_PROMPT,
   buildMatchFallback,
   buildMatchUserPrompt,
@@ -220,4 +226,48 @@ export async function matchProfileWithLLM(input: {
 
   const fallback = buildMatchFallback(profileBrief, generated.failures);
   return { ...fallback, provider: "fallback", profileBrief };
+}
+
+export async function fillFormWithLLM(input: {
+  bandoTitle: string;
+  formName: string;
+  formText: string;
+  bandoDocs: { fileName: string; content: string }[];
+  contextDocs: { fileName: string; content: string }[];
+  verbosity?: ResponseVerbosity;
+  gaps?: string[];
+}): Promise<{
+  summary: string;
+  rawContent: string;
+  provider: "anthropic" | "openai" | "fallback";
+}> {
+  const cards = input.contextDocs.map((doc) => extractProfileCard(doc.fileName, doc.content));
+  const gaps = input.gaps ?? [];
+  const maxTokens = ANALYSIS_MAX_TOKENS[input.verbosity ?? "balanced"];
+  const generated = await generateText({
+    system: FILL_SYSTEM_PROMPT,
+    messages: [
+      {
+        role: "user",
+        content: buildFillUserPrompt({ ...input, cards, gaps }),
+      },
+    ],
+    maxTokens,
+  });
+  if (generated.ok) {
+    return {
+      summary: firstParagraph(generated.text),
+      rawContent: generated.text,
+      provider: generated.provider,
+    };
+  }
+  return {
+    ...buildFillFallback({
+      formName: input.formName,
+      formText: input.formText,
+      fields: fieldsFromProfileCards(cards),
+      failures: generated.failures,
+    }),
+    provider: "fallback",
+  };
 }

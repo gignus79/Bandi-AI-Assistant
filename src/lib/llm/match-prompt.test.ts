@@ -15,9 +15,11 @@ describe("document roles", () => {
       { id: "2", sourceType: "context" },
       { id: "3", sourceType: "paste" },
       { id: "4", sourceType: "context" },
+      { id: "5", sourceType: "form" },
     ]);
     expect(grouped.bando.map((doc) => doc.id)).toEqual(["1", "3"]);
     expect(grouped.context.map((doc) => doc.id)).toEqual(["2", "4"]);
+    expect(grouped.forms.map((doc) => doc.id)).toEqual(["5"]);
   });
 });
 

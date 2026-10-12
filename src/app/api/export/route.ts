@@ -51,6 +51,17 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    if (format === "docx") {
+      const { markdownToDocxBuffer } = await import("@/lib/docx/markdown-to-docx");
+      const buffer = await markdownToDocxBuffer(title, content);
+      return new NextResponse(new Uint8Array(buffer), {
+        headers: {
+          "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "Content-Disposition": `attachment; filename="${safeTitle}.docx"`,
+        },
+      });
+    }
+
     if (format === "pdf") {
       const { jsPDF } = await import("jspdf");
       const { drawMarkdownToPdf } = await import("@/lib/pdf/markdown-to-pdf");
@@ -72,7 +83,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: "Formato non supportato. Usa format=md o format=pdf." },
+      { error: "Formato non supportato. Usa format=md, format=pdf o format=docx." },
       { status: 400 }
     );
   } catch (err) {

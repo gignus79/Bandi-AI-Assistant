@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeft, FileText, Download, Loader2, Calendar, Copy, Check, Scale, MessagesSquare, IdCard, ScrollText, Pencil } from "lucide-react";
+import { ArrowLeft, FileText, Download, Loader2, Calendar, Copy, Check, Scale, MessagesSquare, IdCard, ScrollText, Pencil, PenLine } from "lucide-react";
 import { FileDropzone } from "@/components/upload/FileDropzone";
 import { SavedDocumentsList } from "@/components/documents/SavedDocumentsList";
 import { AnalysisResult } from "@/components/analysis/AnalysisResult";
@@ -14,8 +14,9 @@ import { ResponseVerbositySelect } from "@/components/settings/ResponseVerbosity
 import { SectionIcon } from "@/components/ui/SectionIcon";
 import { MatchVerdictBadge } from "@/components/profile/MatchVerdictBadge";
 import { readVerbosityFromStorage, type ResponseVerbosity } from "@/lib/llm/verbosity";
-import { isContextDocument } from "@/lib/documents/roles";
+import { isBandoDocument, isContextDocument, isFormDocument } from "@/lib/documents/roles";
 import { MATCH_ANALYSIS_TITLE, parseMatchVerdict } from "@/lib/llm/match-prompt";
+import { FILL_ANALYSIS_TITLE } from "@/lib/llm/fill-prompt";
 
 interface BandoDetail {
   bando: { id: string; title: string; description: string | null };
@@ -42,6 +43,8 @@ export default function BandoDetailPage({
   const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(null);
   const [pastedText, setPastedText] = useState("");
   const [contextText, setContextText] = useState("");
+  const [formText, setFormText] = useState("");
+  const [filling, setFilling] = useState(false);
   const [matching, setMatching] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
@@ -111,7 +114,7 @@ export default function BandoDetailPage({
   const handleParsed = async (
     text: string,
     fileName?: string,
-    sourceType?: "file" | "url" | "paste" | "context",
+    sourceType?: "file" | "url" | "paste" | "context" | "form",
     sourceUrl?: string | null
   ) => {
     const res = await fetch("/api/documents", {
@@ -177,7 +180,7 @@ export default function BandoDetailPage({
       alert("Carica almeno un documento del bando prima di avviare l’analisi.");
       return;
     }
-    const bandoDocs = data.documents.filter((doc) => !isContextDocument(doc.sourceType));
+    const bandoDocs = data.documents.filter((doc) => isBandoDocument(doc.sourceType));
     if (bandoDocs.length === 0) {
       alert("Carica almeno un documento del bando. La visura si usa nella verifica di aderenza.");
       return;
@@ -210,6 +213,46 @@ export default function BandoDetailPage({
 
   const handleContextParsed = (text: string, fileName?: string) => {
     void handleParsed(text, fileName ?? "Documento di profilo", "context");
+  };
+
+  const handleFormParsed = (text: string, fileName?: string) => {
+    void handleParsed(text, fileName ?? "Modulo", "form");
+  };
+
+  const runFill = async (documentId: string) => {
+    setFilling(true);
+    try {
+      const res = await fetch("/api/fill", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bandoId: id, documentId, verbosity: responseVerbosity }),
+      });
+      const result = await res.json();
+      if (result.error && res.status === 403) {
+        setShowUpgradeModal(true);
+        setUpgradeMessage(
+          result.limit != null
+            ? `Hai raggiunto il limite di ${result.limit} analisi questo mese. Passa a un piano superiore per continuare.`
+            : undefined
+        );
+        alert(result.error);
+        return;
+      }
+      if (!res.ok) {
+        alert(result.error ?? "Errore nella compilazione del modulo");
+        return;
+      }
+      if (result.warning) alert(result.warning);
+      if (result.id) {
+        setSelectedAnalysisId(result.id);
+        setActiveTab("analyses");
+        fetchBando();
+      }
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Errore di rete durante la compilazione.");
+    } finally {
+      setFilling(false);
+    }
   };
 
   const runMatch = async () => {
@@ -280,9 +323,10 @@ export default function BandoDetailPage({
   }
 
   const selectedAnalysis = data.analyses.find((a) => a.id === selectedAnalysisId) ?? data.analyses[0];
-  const bandoDocs = data.documents.filter((doc) => !isContextDocument(doc.sourceType));
+  const bandoDocs = data.documents.filter((doc) => isBandoDocument(doc.sourceType));
   const contextDocs = data.documents.filter((doc) => isContextDocument(doc.sourceType));
-  const busy = analyzing || matching;
+  const formDocs = data.documents.filter((doc) => isFormDocument(doc.sourceType));
+  const busy = analyzing || matching || filling;
 
   return (
     <div className="space-y-6">
@@ -392,12 +436,18 @@ export default function BandoDetailPage({
             </div>
             <div>
               <p className="font-medium text-foreground">
-                {matching ? "Verifica di aderenza in corso" : "Analisi in corso"}
+                {filling
+                  ? "Compilazione del modulo in corso"
+                  : matching
+                    ? "Verifica di aderenza in corso"
+                    : "Analisi in corso"}
               </p>
               <p className="mt-1 animate-pulse text-sm text-muted-foreground">
-                {matching
-                  ? "Confronto la visura e gli altri documenti di profilo con il bando…"
-                  : "L’AI sta leggendo i documenti e generando l’analisi…"}
+                {filling
+                  ? "Intercetto i dati di profilo e li inserisco nel modulo caricato…"
+                  : matching
+                    ? "Confronto la visura e gli altri documenti di profilo con il bando…"
+                    : "L’AI sta leggendo i documenti e generando l’analisi…"}
               </p>
             </div>
             <div className="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-muted">
@@ -559,6 +609,85 @@ export default function BandoDetailPage({
               )}
             </button>
           </section>
+
+          <section className="space-y-4 rounded-2xl border-2 border-emerald-400 bg-emerald-50 p-4 text-emerald-950 shadow-sm dark:border-emerald-300/50 dark:bg-emerald-950/40 dark:text-emerald-50">
+            <h2 className="flex items-center gap-2 font-semibold">
+              <SectionIcon icon={PenLine} tone="emerald" />
+              Modulo da compilare
+            </h2>
+            <p className="text-sm text-emerald-900/80 dark:text-emerald-100/80">
+              Carica il modulo o il documento vuoto. Il sistema legge i campi e li compila con i dati già presenti
+              nella visura, nel profilo e nel bando.
+            </p>
+            <FileDropzone
+              onParsed={handleFormParsed}
+              onError={(err) => alert(err)}
+              hint="Trascina il modulo o il documento da compilare (PDF, DOCX, TXT) oppure clicca."
+            />
+            <div>
+              <label className="mb-2 block text-sm font-medium">Oppure incolla il testo del modulo</label>
+              <textarea
+                className="min-h-[100px] w-full rounded-md border border-emerald-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-emerald-300/40 dark:bg-[#07140f] dark:text-foreground"
+                placeholder="Incolla qui il modulo con i campi vuoti..."
+                value={formText}
+                onChange={(event) => setFormText(event.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (formText.trim()) {
+                    void handleParsed(formText.trim(), "Modulo incollato", "form");
+                    setFormText("");
+                  }
+                }}
+                disabled={!formText.trim()}
+                className="mt-2 rounded-md bg-emerald-800 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-900 disabled:opacity-50"
+              >
+                Salva modulo
+              </button>
+            </div>
+            {formDocs.length > 0 && (
+              <div className="rounded-xl border border-emerald-200 bg-white p-4 text-slate-900 dark:border-emerald-300/30 dark:bg-[#07140f] dark:text-foreground">
+                <SavedDocumentsList
+                  bandoId={id}
+                  documents={formDocs}
+                  hasAnalyses={false}
+                  onDocumentsChange={fetchBando}
+                  title="Moduli caricati"
+                  description="Il documento sorgente da compilare. Passa il puntatore per l’anteprima."
+                  bulkRole="form"
+                />
+                <div className="flex flex-col gap-2 border-t border-emerald-200 pt-3 dark:border-emerald-300/30">
+                  {formDocs.map((doc) => (
+                    <button
+                      key={doc.id}
+                      type="button"
+                      onClick={() => void runFill(doc.id)}
+                      disabled={busy}
+                      className="inline-flex max-w-full items-center justify-center gap-2 rounded-md bg-emerald-800 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-900 disabled:opacity-50"
+                    >
+                      {filling ? (
+                        <>
+                          <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden />
+                          Compilazione in corso...
+                        </>
+                      ) : (
+                        <>
+                          <PenLine className="h-4 w-4 shrink-0" aria-hidden />
+                          <span className="truncate">Compila «{doc.fileName}»</span>
+                        </>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {contextDocs.length === 0 && (
+              <p className="rounded-lg border border-emerald-600/40 bg-emerald-100 px-3 py-2 text-sm text-emerald-950 dark:bg-emerald-900/40 dark:text-emerald-50">
+                Senza visura o altri documenti di profilo molti campi resteranno vuoti. Puoi compilare comunque: vengono usati solo i dati già caricati.
+              </p>
+            )}
+          </section>
         </div>
       )}
 
@@ -589,6 +718,8 @@ export default function BandoDetailPage({
                   >
                     {a.title === MATCH_ANALYSIS_TITLE ? (
                       <Scale className="h-3.5 w-3.5" aria-hidden />
+                    ) : a.title?.startsWith(FILL_ANALYSIS_TITLE) ? (
+                      <PenLine className="h-3.5 w-3.5" aria-hidden />
                     ) : (
                       <FileText className="h-3.5 w-3.5" aria-hidden />
                     )}
@@ -648,6 +779,13 @@ export default function BandoDetailPage({
                         className="inline-flex items-center gap-1 rounded-md bg-muted px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/80"
                       >
                         <Download className="h-4 w-4" /> PDF
+                      </a>
+                      <a
+                        href={`/api/export?id=${selectedAnalysis.id}&format=docx`}
+                        download
+                        className="inline-flex items-center gap-1 rounded-md bg-muted px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/80"
+                      >
+                        <Download className="h-4 w-4" /> DOCX
                       </a>
                       <a
                         href={`/api/bandi/${id}/calendar`}

@@ -13,7 +13,7 @@ interface SavedDocumentsListProps {
   onDocumentsChange: () => void;
   title?: string;
   description?: string;
-  bulkRole?: "bando" | "context";
+  bulkRole?: "bando" | "context" | "form";
 }
 
 export function SavedDocumentsList({
