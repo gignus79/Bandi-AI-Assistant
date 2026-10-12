@@ -4,7 +4,6 @@ import { WelcomeMediaMatterLogo } from "@/components/layout/WelcomeMediaMatterLo
 import { AiDisclaimer } from "@/components/legal/AiDisclaimer";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Footer } from "@/components/layout/Footer";
-import { BetaBadge } from "@/components/ui/BetaBadge";
 import { PLANS } from "@/lib/stripe";
 
 const TAGS = [
@@ -29,7 +28,6 @@ export default function HomePage() {
             <span className="h-1.5 w-1.5 rounded-full bg-cyan-500 shadow-[0_0_10px_#22d3ee] dark:bg-cyan-400" aria-hidden />
             AI Assistant
           </span>
-          <BetaBadge className="text-[10px] sm:text-xs" />
         </div>
 
         <div className="w-full max-w-xl p-[1px] sm:max-w-2xl">

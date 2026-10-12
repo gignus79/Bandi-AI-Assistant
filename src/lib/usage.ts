@@ -96,7 +96,7 @@ export async function canSendMessage(
   userId: string,
   planId: PlanId
 ): Promise<{ allowed: boolean; used: number; limit: number | null }> {
-  if (isTestUser(userId))
+  if (await isTestUser(userId))
     return { allowed: true, used: 0, limit: null };
   const plan = PLANS[planId];
   if (plan.messagesTotal != null) {
@@ -130,7 +130,7 @@ export async function checkRateLimit(
   slug: string,
   maxPerMinute: number
 ): Promise<{ allowed: boolean }> {
-  if (isTestUser(userId)) return { allowed: true };
+  if (await isTestUser(userId)) return { allowed: true };
   const windowKey = getMinuteWindowKey();
   const existing = await db
     .select()
@@ -198,7 +198,7 @@ export async function canRunAnalysis(
   userId: string,
   planId: PlanId
 ): Promise<{ allowed: boolean; used: number; limit: number }> {
-  if (isTestUser(userId))
+  if (await isTestUser(userId))
     return { allowed: true, used: 0, limit: -1 };
   const plan = PLANS[planId];
   const limit = plan.analysesPerMonth;

@@ -52,7 +52,7 @@ export async function extractDeadlinesWithLLM(analysisText: string): Promise<Cal
 
   if (anthropic) {
     const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-5",
+      model: process.env.ANTHROPIC_MODEL ?? "claude-opus-5-5",
       max_tokens: 2048,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: userPrompt }],

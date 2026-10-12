@@ -40,7 +40,7 @@ async function generateText(options: {
   if (anthropic) {
     try {
       const msg = await anthropic.messages.create({
-        model: process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-20250514",
+        model: process.env.ANTHROPIC_MODEL ?? "claude-opus-5-5",
         max_tokens: options.maxTokens,
         system: options.system,
         messages: options.messages.map((message) => ({
@@ -188,6 +188,7 @@ export async function matchProfileWithLLM(input: {
   bandoDocs: { fileName: string; content: string }[];
   contextDocs: { fileName: string; content: string }[];
   verbosity?: ResponseVerbosity;
+  gaps?: string[];
 }): Promise<{
   summary: string;
   rawContent: string;

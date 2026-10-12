@@ -77,20 +77,19 @@ export async function POST(req: NextRequest) {
     const usableBando = bandoDocs.filter((doc) => doc.content.trim().length > 0);
     const usableContext = contextDocs.filter((doc) => doc.content.trim().length > 0);
 
-    if (usableBando.length === 0) {
+    if (usableBando.length === 0 && usableContext.length === 0) {
       return NextResponse.json(
-        { error: "Carica almeno un documento del bando prima della verifica di aderenza." },
+        { error: "Carica almeno un documento del bando o del profilo prima della verifica." },
         { status: 400 }
       );
     }
+
+    const gaps: string[] = [];
+    if (usableBando.length === 0) {
+      gaps.push("Mancano i documenti del bando: il confronto userà solo il profilo.");
+    }
     if (usableContext.length === 0) {
-      return NextResponse.json(
-        {
-          error:
-            "Carica la visura o almeno un documento del soggetto (statuto, bilancio, CV) per confrontarlo con il bando.",
-        },
-        { status: 400 }
-      );
+      gaps.push("Mancano visura o altri documenti del soggetto: il confronto userà solo il bando.");
     }
 
     await incrementRateLimit(userId, "analyze_minute");
@@ -100,6 +99,7 @@ export async function POST(req: NextRequest) {
       bandoDocs: usableBando,
       contextDocs: usableContext,
       verbosity,
+      gaps,
     });
     const isFallback = result.provider === "fallback";
     if (!isFallback) {
@@ -138,9 +138,16 @@ export async function POST(req: NextRequest) {
       createdAt: inserted.createdAt,
       provider: result.provider,
       verdict: parseMatchVerdict(result.rawContent),
-      warning: isFallback
-        ? "Il confronto AI non è stato completato. È stata salvata la scheda letta dai documenti di profilo e il conteggio analisi non è stato consumato. Riprova tra poco."
-        : null,
+      warning: [
+        gaps.length > 0
+          ? `${gaps.join(" ")} La verifica è stata eseguita comunque con i dati disponibili.`
+          : null,
+        isFallback
+          ? "Il confronto AI non è stato completato. È stata salvata la scheda letta dai documenti e il conteggio analisi non è stato consumato. Riprova tra poco."
+          : null,
+      ]
+        .filter(Boolean)
+        .join(" ") || null,
     });
   } catch (err) {
     console.error("[match] error", {

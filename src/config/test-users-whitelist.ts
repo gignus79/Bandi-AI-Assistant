@@ -1,27 +1,27 @@
 /**
- * Whitelist utenti di test: nessun limite su analisi, messaggi e rate limit.
- * Aggiungi gli user ID Clerk (es. da Dashboard Clerk → Users).
- * Puoi anche impostare TEST_USERS_WHITELIST in .env.local (ID separati da virgola).
+ * Account senza limiti di analisi, messaggi e rate limit.
+ * In TEST_USERS_WHITELIST metti le email, separate da virgola.
+ * Un valore senza @ viene ancora accettato come ID Clerk.
  */
-export const TEST_USER_IDS: string[] = [
-  // Esempio: "user_2abc123...",
-];
+export const TEST_USER_EMAILS: string[] = [];
 
-function getWhitelist(): string[] {
-  const fromEnv = process.env.TEST_USERS_WHITELIST?.split(",")
-    .map((s) => s.trim())
+export function parseWhitelist(raw: string | undefined): string[] {
+  return (raw ?? "")
+    .split(",")
+    .map((entry) => entry.trim().toLowerCase())
     .filter(Boolean);
-  if (fromEnv?.length) return fromEnv;
-  return TEST_USER_IDS;
 }
 
-let cached: string[] | null = null;
-
-export function getTestUserIds(): string[] {
-  if (cached === null) cached = getWhitelist();
-  return cached;
+export function whitelistEntries(): string[] {
+  const fromEnv = parseWhitelist(process.env.TEST_USERS_WHITELIST);
+  if (fromEnv.length > 0) return fromEnv;
+  return TEST_USER_EMAILS.map((email) => email.trim().toLowerCase()).filter(Boolean);
 }
 
-export function isTestUser(userId: string): boolean {
-  return getTestUserIds().includes(userId);
+export function matchesWhitelist(userId: string, email: string | null | undefined): boolean {
+  const list = whitelistEntries();
+  if (list.length === 0) return false;
+  if (list.includes(userId.trim().toLowerCase())) return true;
+  const normalized = email?.trim().toLowerCase();
+  return Boolean(normalized && list.includes(normalized));
 }

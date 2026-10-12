@@ -7,7 +7,6 @@ import { Footer } from "@/components/layout/Footer";
 import { OnboardingGate } from "@/components/onboarding/OnboardingGate";
 import { UserGreeting } from "@/components/onboarding/UserGreeting";
 import { BrandLogo } from "@/components/ui/BrandLogo";
-import { BetaBadge } from "@/components/ui/BetaBadge";
 
 export default function DashboardLayout({
   children,
@@ -23,7 +22,6 @@ export default function DashboardLayout({
           >
             <BrandLogo heightClass="h-9" />
             <span className="hidden sm:inline">Bandi AI Assistant</span>
-            <BetaBadge />
           </Link>
           <nav className="flex flex-wrap items-center gap-1 sm:gap-2">
             <Link

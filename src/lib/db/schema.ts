@@ -15,11 +15,22 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const bandoFolders = pgTable("bando_folders", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const bandi = pgTable("bandi", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
+  folderId: uuid("folder_id").references(() => bandoFolders.id, { onDelete: "set null" }),
   title: text("title").notNull(),
   description: text("description"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -116,6 +127,7 @@ export const feedback = pgTable("feedback", {
 });
 
 export type User = typeof users.$inferSelect;
+export type BandoFolder = typeof bandoFolders.$inferSelect;
 export type Bando = typeof bandi.$inferSelect;
 export type Document = typeof documents.$inferSelect;
 export type Analysis = typeof analyses.$inferSelect;

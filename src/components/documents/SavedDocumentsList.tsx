@@ -169,7 +169,7 @@ export function SavedDocumentsList({
               </div>
               {preview?.docId === d.id && (
                 <div
-                  className="absolute left-0 top-full z-20 mt-1 max-h-56 w-[min(100%,26rem)] overflow-y-auto rounded-lg border border-violet-200/60 bg-popover p-3 text-left text-xs leading-relaxed text-popover-foreground shadow-xl dark:border-violet-500/30 dark:bg-[#12101a]"
+                  className="mt-1 max-h-48 overflow-y-auto rounded-lg border border-border bg-background p-3 text-left text-xs leading-relaxed text-foreground shadow-sm"
                   onMouseEnter={clearLeaveTimer}
                 >
                   {previewLoading ? (
@@ -178,7 +178,7 @@ export function SavedDocumentsList({
                     </span>
                   ) : (
                     <>
-                      <p className="mb-1 font-medium text-violet-700 dark:text-violet-200/90">{preview.fileName}</p>
+                      <p className="mb-1 break-all font-medium text-foreground">{preview.fileName}</p>
                       <p className="whitespace-pre-wrap break-words text-slate-700 dark:text-slate-200/90">
                         {preview.text || "—"}
                       </p>

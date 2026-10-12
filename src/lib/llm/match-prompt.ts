@@ -7,7 +7,8 @@ export const MATCH_SYSTEM_PROMPT = `Sei un analista di bandi pubblici italiani. 
 Regole:
 - Non inventare requisiti, date, importi, codici o dati anagrafici che non compaiono nei testi.
 - Se un requisito non è dimostrabile con i documenti di profilo, l'esito di riga è "Non verificabile".
-- Se il bando rimanda ad altri atti non allegati, non dedurre quei requisiti: l'esito generale non può essere "Aderente".
+- Se i materiali non bastano per un giudizio di ammissibilità, l'esito generale è "Dati insufficienti": scrivi subito l'avviso e poi continua comunque l'analisi con tutti i dati presenti (scheda, confronti possibili, lacune). Non fermarti all'avviso.
+- Se il bando rimanda ad altri atti non allegati, non inventare quei requisiti.
 - Leggi insieme tutti i documenti di contesto.
 - Questa verifica non è un parere legale e non garantisce l'ammissione.
 
@@ -83,9 +84,14 @@ export function buildMatchUserPrompt(input: {
   bandoDocs: { fileName: string; content: string }[];
   contextDocs: { fileName: string; content: string }[];
   cards: ProfileCard[];
+  gaps?: string[];
 }): string {
   const brief = formatProfileCards(input.cards);
-  return `Bando: ${input.bandoTitle}
+  const gapNotice =
+    input.gaps && input.gaps.length > 0
+      ? `AVVISO: ${input.gaps.join(" ")} Prosegui comunque il confronto usando solo i dati disponibili.\n\n`
+      : "";
+  return `${gapNotice}Bando: ${input.bandoTitle}
 
 ## Schede estratte dai documenti di profilo
 ${brief}
@@ -96,7 +102,7 @@ ${packDocuments(input.bandoDocs, 70_000)}
 ## Documenti di profilo e contesto
 ${packDocuments(input.contextDocs, 50_000)}
 
-Confronta il profilo con i requisiti effettivamente scritti nei documenti del bando. Se quei testi non contengono i criteri di ammissibilità, dichiaralo.`;
+Confronta il profilo con i requisiti effettivamente scritti nei documenti del bando. Se quei testi non contengono i criteri di ammissibilità, dichiaralo e prosegui il confronto con i dati presenti.`;
 }
 
 export function buildMatchFallback(profileBrief: string, failures: string[]): {

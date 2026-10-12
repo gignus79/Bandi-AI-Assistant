@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeft, FileText, Download, Loader2, Calendar, Copy, Check, Scale, MessagesSquare, IdCard, ScrollText } from "lucide-react";
+import { ArrowLeft, FileText, Download, Loader2, Calendar, Copy, Check, Scale, MessagesSquare, IdCard, ScrollText, Pencil } from "lucide-react";
 import { FileDropzone } from "@/components/upload/FileDropzone";
 import { SavedDocumentsList } from "@/components/documents/SavedDocumentsList";
 import { AnalysisResult } from "@/components/analysis/AnalysisResult";
@@ -43,6 +43,9 @@ export default function BandoDetailPage({
   const [pastedText, setPastedText] = useState("");
   const [contextText, setContextText] = useState("");
   const [matching, setMatching] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState("");
+  const [savingTitle, setSavingTitle] = useState(false);
   const [copiedAnalysisId, setCopiedAnalysisId] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [upgradeMessage, setUpgradeMessage] = useState<string | undefined>();
@@ -245,6 +248,28 @@ export default function BandoDetailPage({
     }
   };
 
+  const saveTitle = async () => {
+    const next = titleDraft.trim();
+    if (!next) return;
+    setSavingTitle(true);
+    try {
+      const res = await fetch(`/api/bandi/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: next }),
+      });
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(payload.error ?? "Impossibile rinominare il bando.");
+        return;
+      }
+      setEditingTitle(false);
+      fetchBando();
+    } finally {
+      setSavingTitle(false);
+    }
+  };
+
   if (loading || !data) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-16">
@@ -268,7 +293,53 @@ export default function BandoDetailPage({
         >
           <ArrowLeft className="h-5 w-5" />
         </Link>
-        <h1 className="text-2xl font-bold text-foreground">{data.bando.title}</h1>
+        {editingTitle ? (
+          <form
+            className="flex min-w-0 flex-1 flex-wrap items-center gap-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void saveTitle();
+            }}
+          >
+            <input
+              value={titleDraft}
+              onChange={(event) => setTitleDraft(event.target.value)}
+              className="min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-1.5 text-lg font-semibold"
+              aria-label="Nome del bando"
+              autoFocus
+            />
+            <button
+              type="submit"
+              disabled={savingTitle || !titleDraft.trim()}
+              className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
+            >
+              {savingTitle ? "Salvo…" : "Salva"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditingTitle(false)}
+              className="rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted"
+            >
+              Annulla
+            </button>
+          </form>
+        ) : (
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <h1 className="truncate text-2xl font-bold text-foreground">{data.bando.title}</h1>
+            <button
+              type="button"
+              onClick={() => {
+                setTitleDraft(data.bando.title);
+                setEditingTitle(true);
+              }}
+              className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+              aria-label="Rinomina bando"
+              title="Rinomina bando"
+            >
+              <Pencil className="h-4 w-4" aria-hidden />
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="flex gap-2 border-b border-border">
@@ -338,21 +409,21 @@ export default function BandoDetailPage({
 
       {activeTab === "upload" && (
         <div className="space-y-6">
-          <div className="rounded-lg border border-border bg-card p-4">
-            <h2 className="mb-1 flex items-center gap-2 font-semibold">
+          <section className="space-y-4 rounded-2xl border-2 border-violet-300 bg-violet-50 p-4 text-violet-950 shadow-sm dark:border-violet-400/50 dark:bg-violet-950/50 dark:text-violet-50">
+            <h2 className="flex items-center gap-2 font-semibold">
               <SectionIcon icon={ScrollText} tone="violet" />
               Documenti del bando
             </h2>
-            <p className="mb-3 text-sm text-muted-foreground">
+            <p className="text-sm text-violet-900/80 dark:text-violet-100/80">
               Disciplinare, allegati e testi ufficiali. Puoi caricarne più di uno.
             </p>
             <FileDropzone onParsed={handleFileParsed} onError={(err) => alert(err)} />
-            <div className="mt-4">
-              <label className="mb-2 block text-sm font-medium text-foreground">
+            <div>
+              <label className="mb-2 block text-sm font-medium">
                 Oppure incolla il testo del bando
               </label>
               <textarea
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[120px]"
+                className="min-h-[120px] w-full rounded-md border border-violet-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-violet-400/40 dark:bg-[#120c22] dark:text-foreground"
                 placeholder="Incolla qui il contenuto..."
                 value={pastedText}
                 onChange={(e) => setPastedText(e.target.value)}
@@ -366,56 +437,57 @@ export default function BandoDetailPage({
                   }
                 }}
                 disabled={!pastedText.trim()}
-                className="mt-2 rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground hover:bg-secondary/80"
+                className="mt-2 rounded-md bg-violet-700 px-4 py-2 text-sm font-medium text-white hover:bg-violet-800 disabled:opacity-50"
               >
                 Salva documento
               </button>
             </div>
-          </div>
-          {bandoDocs.length > 0 && (
-            <div className="rounded-lg border border-border bg-card p-4">
-              <SavedDocumentsList
-                bandoId={id}
-                documents={bandoDocs}
-                hasAnalyses={data.analyses.length > 0}
-                onDocumentsChange={fetchBando}
-                title="Documenti del bando salvati"
-                bulkRole="bando"
-              />
-              <div className="mb-4 mt-2 max-w-md">
-                <ResponseVerbositySelect
-                  value={responseVerbosity}
-                  onChange={setResponseVerbosity}
-                  id="analysis-verbosity"
+            {bandoDocs.length > 0 && (
+              <div className="rounded-xl border border-violet-200 bg-white p-4 text-slate-900 dark:border-violet-400/30 dark:bg-[#100a1c] dark:text-foreground">
+                <SavedDocumentsList
+                  bandoId={id}
+                  documents={bandoDocs}
+                  hasAnalyses={data.analyses.length > 0}
+                  onDocumentsChange={fetchBando}
+                  title="Documenti del bando salvati"
+                  bulkRole="bando"
                 />
+                <div className="mt-2 flex flex-col gap-3 border-t border-violet-200 pt-4 dark:border-violet-400/30 sm:flex-row sm:items-end sm:justify-between">
+                  <ResponseVerbositySelect
+                    value={responseVerbosity}
+                    onChange={setResponseVerbosity}
+                    id="analysis-verbosity"
+                    className="max-w-md"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleStartAnalysisForAll}
+                    disabled={busy}
+                    className="inline-flex shrink-0 items-center gap-2 rounded-md bg-violet-700 px-4 py-2 text-sm font-medium text-white hover:bg-violet-800 disabled:opacity-50"
+                  >
+                    {analyzing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                        <span className="animate-pulse">Analisi in corso...</span>
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="h-4 w-4" aria-hidden />
+                        Avvia analisi sui documenti del bando
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
-              <button
-                type="button"
-                onClick={handleStartAnalysisForAll}
-                disabled={busy}
-                className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
-              >
-                {analyzing ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                    <span className="animate-pulse">Analisi in corso...</span>
-                  </>
-                ) : (
-                  <>
-                    <FileText className="h-4 w-4" aria-hidden />
-                    Avvia analisi sui documenti del bando
-                  </>
-                )}
-              </button>
-            </div>
-          )}
+            )}
+          </section>
 
-          <div className="rounded-lg border border-cyan-500/25 bg-card p-4">
-            <h2 className="mb-1 flex items-center gap-2 font-semibold">
-              <SectionIcon icon={IdCard} tone="cyan" />
+          <section className="space-y-4 rounded-2xl border-2 border-amber-400 bg-amber-50 p-4 text-amber-950 shadow-sm dark:border-amber-300/60 dark:bg-amber-950/40 dark:text-amber-50">
+            <h2 className="flex items-center gap-2 font-semibold">
+              <SectionIcon icon={IdCard} tone="amber" />
               Profilo del soggetto
             </h2>
-            <p className="mb-3 text-sm text-muted-foreground">
+            <p className="text-sm text-amber-900/80 dark:text-amber-100/80">
               Allega la visura camerale e, se serve, altri documenti di contesto: statuto, bilancio, CV,
               dichiarazioni. Servono per la verifica di aderenza ai requisiti del bando.
             </p>
@@ -424,12 +496,12 @@ export default function BandoDetailPage({
               onError={(err) => alert(err)}
               hint="Trascina visura, statuto, bilancio o CV (PDF, DOCX, immagini) oppure clicca. Puoi allegarne più di uno."
             />
-            <div className="mt-4">
-              <label className="mb-2 block text-sm font-medium text-foreground">
+            <div>
+              <label className="mb-2 block text-sm font-medium">
                 Oppure incolla un estratto (visura, statuto, note)
               </label>
               <textarea
-                className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="min-h-[100px] w-full rounded-md border border-amber-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-amber-300/40 dark:bg-[#1a1408] dark:text-foreground"
                 placeholder="Incolla qui i dati del soggetto..."
                 value={contextText}
                 onChange={(e) => setContextText(e.target.value)}
@@ -443,13 +515,13 @@ export default function BandoDetailPage({
                   }
                 }}
                 disabled={!contextText.trim()}
-                className="mt-2 rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground hover:bg-secondary/80"
+                className="mt-2 rounded-md bg-amber-800 px-4 py-2 text-sm font-medium text-white hover:bg-amber-900 disabled:opacity-50"
               >
                 Salva nel profilo
               </button>
             </div>
             {contextDocs.length > 0 && (
-              <div className="mt-4">
+              <div className="rounded-xl border border-amber-200 bg-white p-4 text-slate-900 dark:border-amber-300/30 dark:bg-[#1a1408] dark:text-foreground">
                 <SavedDocumentsList
                   bandoId={id}
                   documents={contextDocs}
@@ -461,11 +533,18 @@ export default function BandoDetailPage({
                 />
               </div>
             )}
+            {(bandoDocs.length === 0 || contextDocs.length === 0) && (
+              <p className="rounded-lg border border-amber-500/50 bg-amber-100 px-3 py-2 text-sm text-amber-950 dark:bg-amber-900/40 dark:text-amber-50">
+                {bandoDocs.length === 0 && contextDocs.length === 0
+                  ? "Carica almeno un documento per avviare la verifica."
+                  : "I dati sono incompleti. Puoi avviare comunque la verifica: useremo solo quello che hai caricato e segnaleremo le lacune."}
+              </p>
+            )}
             <button
               type="button"
               onClick={() => void runMatch()}
-              disabled={busy || bandoDocs.length === 0 || contextDocs.length === 0}
-              className="mt-2 inline-flex items-center gap-2 rounded-md bg-cyan-700 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-800 disabled:opacity-50 dark:bg-cyan-600 dark:hover:bg-cyan-500"
+              disabled={busy || (bandoDocs.length === 0 && contextDocs.length === 0)}
+              className="inline-flex items-center gap-2 rounded-md bg-amber-800 px-4 py-2 text-sm font-medium text-white hover:bg-amber-900 disabled:opacity-50"
             >
               {matching ? (
                 <>
@@ -479,12 +558,7 @@ export default function BandoDetailPage({
                 </>
               )}
             </button>
-            {(bandoDocs.length === 0 || contextDocs.length === 0) && (
-              <p className="mt-2 text-xs text-muted-foreground">
-                Servono almeno un documento del bando e un documento di profilo.
-              </p>
-            )}
-          </div>
+          </section>
         </div>
       )}
 
@@ -585,6 +659,12 @@ export default function BandoDetailPage({
                       </a>
                     </div>
                   </div>
+                  {selectedAnalysis.title === MATCH_ANALYSIS_TITLE &&
+                    parseMatchVerdict(selectedAnalysis.rawContent ?? "") === "insufficiente" && (
+                      <p className="mb-4 rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm text-amber-950 dark:bg-amber-950/40 dark:text-amber-50">
+                        I dati non bastano per un giudizio completo di ammissibilità. Qui sotto c’è comunque il confronto con quello che hai caricato.
+                      </p>
+                    )}
                   <AnalysisResult content={selectedAnalysis.rawContent ?? selectedAnalysis.summary} />
                 </div>
               )}
