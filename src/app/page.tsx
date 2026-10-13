@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/nextjs";
 import { WelcomeMediaMatterLogo } from "@/components/layout/WelcomeMediaMatterLogo";
 import { AiDisclaimer } from "@/components/legal/AiDisclaimer";
@@ -36,6 +37,16 @@ export default function HomePage() {
               <p className="mt-4 text-center text-sm text-slate-600 sm:text-base dark:text-violet-100/75">
                 Upload documenti · Verifica visura · Analisi strutturata · Chat AI contestuale · Export calendario
               </p>
+              <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200/80 shadow-sm dark:border-white/10">
+                <Image
+                  src="/landing-emotion.jpg"
+                  alt="Una persona mette ordine tra i documenti di un bando, alla luce di una lampada"
+                  width={1280}
+                  height={720}
+                  priority
+                  className="h-52 w-full object-cover sm:h-64"
+                />
+              </div>
 
               <p className="mt-5 text-center text-sm leading-relaxed text-slate-700 dark:text-violet-100/85">
                 <strong>Free</strong>: fino a {PLANS.free.analysesPerMonth} analisi al mese e{" "}

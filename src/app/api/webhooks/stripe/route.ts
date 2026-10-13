@@ -26,9 +26,8 @@ export async function POST(req: NextRequest) {
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown";
-    return NextResponse.json({ error: `Webhook signature failed: ${message}` }, { status: 400 });
+  } catch {
+    return NextResponse.json({ error: "Firma webhook non valida." }, { status: 400 });
   }
 
   switch (event.type) {

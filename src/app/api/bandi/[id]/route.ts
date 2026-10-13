@@ -93,3 +93,25 @@ export async function PATCH(
     );
   }
 }
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const userId = await requireAuth();
+    const { id } = await params;
+    const existing = await db.select().from(bandi).where(eq(bandi.id, id)).limit(1);
+    if (existing.length === 0 || existing[0].userId !== userId) {
+      return NextResponse.json({ error: "Bando non trovato." }, { status: 404 });
+    }
+    await db.delete(bandi).where(eq(bandi.id, id));
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("Bando delete error:", err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Errore" },
+      { status: 500 }
+    );
+  }
+}

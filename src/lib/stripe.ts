@@ -37,6 +37,20 @@ export const PLANS = {
 
 export type PlanId = keyof typeof PLANS;
 
+export function safeAppUrl(candidate: string | undefined, origin: string, fallbackPath: string): string {
+  const fallback = new URL(fallbackPath, origin).toString();
+  if (!candidate) return fallback;
+  try {
+    const target = new URL(candidate);
+    const base = new URL(origin);
+    if (target.origin !== base.origin) return fallback;
+    if (target.protocol !== "https:" && target.protocol !== "http:") return fallback;
+    return target.toString();
+  } catch {
+    return fallback;
+  }
+}
+
 export function getPlanByPriceId(priceId: string): PlanId | null {
   if (priceId === PLANS.pro.priceId) return "pro";
   if (priceId === PLANS.unlimited.priceId) return "unlimited";

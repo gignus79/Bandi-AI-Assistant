@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Copy, Loader2 } from "lucide-react";
+import { Copy, Download, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
@@ -133,16 +133,32 @@ export function ChatPanel({
             className="sm:min-w-[280px]"
           />
         </div>
-        {messages.length > 0 && (
-          <button
-            type="button"
-            onClick={copyChatToClipboard}
-            className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
-            title="Copia chat"
-          >
-            <Copy className="h-3.5 w-3.5" /> Copia chat
-          </button>
-        )}
+        <div className="flex flex-wrap items-center gap-1">
+          {messages.length > 0 && (
+            <>
+              <a
+                href={`/api/bandi/${bandoId}/chat-export?format=pdf`}
+                className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                <Download className="h-3.5 w-3.5" aria-hidden /> PDF
+              </a>
+              <a
+                href={`/api/bandi/${bandoId}/chat-export?format=docx`}
+                className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                <Download className="h-3.5 w-3.5" aria-hidden /> DOCX
+              </a>
+              <button
+                type="button"
+                onClick={copyChatToClipboard}
+                className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+                title="Copia chat"
+              >
+                <Copy className="h-3.5 w-3.5" /> Copia chat
+              </button>
+            </>
+          )}
+        </div>
       </div>
       <div className="max-h-[60vh] min-h-[320px] overflow-y-auto bg-slate-50/50 px-3 py-4 dark:bg-black/20 sm:px-5">
         {messages.length === 0 ? (

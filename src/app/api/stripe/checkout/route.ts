@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { ensureUser } from "@/lib/db/users";
-import { stripe } from "@/lib/stripe";
+import { stripe, PLANS, safeAppUrl } from "@/lib/stripe";
 import { getPublicAppSlug } from "@/lib/app-identity";
-import { PLANS } from "@/lib/stripe";
 import { z } from "zod";
 
 const zBody = z.object({
@@ -54,14 +53,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const origin = req.headers.get("origin") ?? "http://localhost:3000";
+    const origin = req.headers.get("origin") ?? new URL(req.url).origin;
     const appSlug = getPublicAppSlug();
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: successUrl ?? `${origin}/dashboard?success=1`,
-      cancel_url: cancelUrl ?? `${origin}/pricing`,
+      success_url: safeAppUrl(successUrl, origin, "/dashboard?success=1"),
+      cancel_url: safeAppUrl(cancelUrl, origin, "/dashboard/pricing"),
       client_reference_id: userId,
       metadata: {
         userId,
@@ -80,7 +79,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("Stripe checkout error:", err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Errore checkout" },
+      { error: "Impossibile avviare il pagamento. Riprova tra poco." },
       { status: 500 }
     );
   }

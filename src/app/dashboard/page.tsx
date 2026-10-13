@@ -3,8 +3,7 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Folder, FolderPlus, Loader2, Pencil, PlusCircle, ScrollText, Trash2 } from "lucide-react";
-import { BrandLogo } from "@/components/ui/BrandLogo";
+import { Folder, FolderPlus, Loader2, Pencil, PlusCircle, ScrollText, Trash2, X } from "lucide-react";
 
 interface Bando {
   id: string;
@@ -33,6 +32,7 @@ function DashboardContent() {
   const [creatingFolder, setCreatingFolder] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftTitle, setDraftTitle] = useState("");
+  const [dropTarget, setDropTarget] = useState<string | null>(null);
   const pollingDone = useRef(false);
 
   const reload = useCallback(() => {
@@ -161,6 +161,35 @@ function DashboardContent() {
     reload();
   };
 
+  const deleteBando = async (bandoId: string, title: string) => {
+    if (!confirm(`Eliminare il bando “${title}” e i suoi documenti?`)) return;
+    const res = await fetch(`/api/bandi/${bandoId}`, { method: "DELETE" });
+    if (!res.ok) {
+      const payload = await res.json().catch(() => ({}));
+      alert(payload.error ?? "Impossibile eliminare il bando.");
+      return;
+    }
+    reload();
+  };
+
+  const onBandoDragStart = (event: React.DragEvent, bandoId: string) => {
+    event.dataTransfer.setData("text/plain", bandoId);
+    event.dataTransfer.effectAllowed = "move";
+  };
+
+  const onFolderDragOver = (event: React.DragEvent, target: string) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    setDropTarget(target);
+  };
+
+  const onFolderDrop = (event: React.DragEvent, folderId: string | null) => {
+    event.preventDefault();
+    const bandoId = event.dataTransfer.getData("text/plain");
+    setDropTarget(null);
+    if (bandoId) void moveBando(bandoId, folderId);
+  };
+
   const deleteFolder = async (folderId: string) => {
     if (!confirm("Eliminare la cartella? I bandi restano nell’elenco, senza cartella.")) return;
     const res = await fetch(`/api/folders/${folderId}`, { method: "DELETE" });
@@ -178,7 +207,12 @@ function DashboardContent() {
   const renderCards = (items: Bando[]) => (
     <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((bando) => (
-        <li key={bando.id}>
+        <li
+          key={bando.id}
+          draggable={editingId !== bando.id}
+          onDragStart={(event) => onBandoDragStart(event, bando.id)}
+          className="cursor-grab active:cursor-grabbing"
+        >
           <div className="rounded-[20px] border border-slate-200 bg-white p-4 text-slate-900 shadow-sm dark:border-white/10 dark:bg-[#0c0818]/65 dark:text-foreground">
             <div className="flex items-start gap-3">
               <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-violet-300/50 bg-violet-500/10 text-violet-700 dark:border-violet-400/30 dark:text-violet-200">
@@ -220,6 +254,15 @@ function DashboardContent() {
                     >
                       <Pencil className="h-3.5 w-3.5" aria-hidden />
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => void deleteBando(bando.id, bando.title)}
+                      className="rounded-md p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                      aria-label={`Elimina ${bando.title}`}
+                      title="Elimina bando"
+                    >
+                      <X className="h-4 w-4" aria-hidden />
+                    </button>
                   </div>
                 )}
                 <label className="mt-2 block text-[11px] text-muted-foreground">
@@ -250,24 +293,17 @@ function DashboardContent() {
 
   return (
     <div className="space-y-8">
-      <section className="rounded-[24px] border border-slate-200 bg-white/95 p-6 text-foreground shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-[#0c0818]/70 dark:shadow-[0_0_48px_-16px_rgba(139,92,246,0.25)]">
-        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-          <BrandLogo heightClass="h-14 sm:h-16" />
-          <div className="min-w-0 flex-1">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-foreground">
-              Bandi AI Assistant
-            </h2>
-            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-700 dark:text-muted-foreground">
-              Carica la documentazione dei bandi e, se vuoi, la visura del soggetto per una verifica di aderenza.
-              Poi avvia l’analisi: sintesi, requisiti, scadenze, criteri e suggerimenti.
-              Crea bandi, raggruppali in cartelle ed esporta in PDF o calendario. Per limiti e piani vedi{" "}
-              <Link href="/dashboard/pricing" className="font-medium text-violet-700 underline underline-offset-2 hover:text-violet-900 dark:text-cyan-300 dark:hover:text-cyan-200">
-                Abbonamento
-              </Link>
-              .
-            </p>
-          </div>
-        </div>
+      <section className="rounded-[24px] border border-slate-200 bg-white/95 p-6 text-foreground shadow-sm dark:border-white/10 dark:bg-[#0c0818]/70">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-foreground">Bandi AI Assistant</h2>
+        <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-700 dark:text-muted-foreground">
+          Carica la documentazione dei bandi e, se vuoi, la visura del soggetto per una verifica di aderenza.
+          Poi avvia l’analisi: sintesi, requisiti, scadenze, criteri e suggerimenti.
+          Crea bandi, raggruppali in cartelle ed esporta in PDF o calendario. Per limiti e piani vedi{" "}
+          <Link href="/dashboard/pricing" className="font-medium text-violet-700 underline underline-offset-2 hover:text-violet-900 dark:text-cyan-300 dark:hover:text-cyan-200">
+            Abbonamento
+          </Link>
+          .
+        </p>
       </section>
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -330,7 +366,15 @@ function DashboardContent() {
           {folders.map((folder) => {
             const items = bandi.filter((bando) => bando.folderId === folder.id);
             return (
-              <section key={folder.id} className="space-y-3">
+              <section
+                key={folder.id}
+                className={`space-y-3 rounded-2xl p-3 transition ${
+                  dropTarget === folder.id ? "bg-amber-100/80 ring-2 ring-amber-400 dark:bg-amber-950/40" : ""
+                }`}
+                onDragOver={(event) => onFolderDragOver(event, folder.id)}
+                onDragLeave={() => setDropTarget((current) => (current === folder.id ? null : current))}
+                onDrop={(event) => onFolderDrop(event, folder.id)}
+              >
                 <div className="flex items-center justify-between gap-2">
                   <h2 className="inline-flex items-center gap-2 text-lg font-semibold">
                     <Folder className="h-5 w-5 text-amber-700 dark:text-amber-200" aria-hidden />
@@ -346,18 +390,32 @@ function DashboardContent() {
                   </button>
                 </div>
                 {items.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Nessun bando in questa cartella.</p>
+                  <p className="text-sm text-muted-foreground">Trascina qui un bando.</p>
                 ) : (
                   renderCards(items)
                 )}
               </section>
             );
           })}
-          {(folders.length === 0 ? bandi : ungrouped).length > 0 && (
-            <section className="space-y-3">
-              {folders.length > 0 && <h2 className="text-lg font-semibold">Senza cartella</h2>}
-              {renderCards(folders.length === 0 ? bandi : ungrouped)}
+          {folders.length > 0 && (
+            <section
+              className={`space-y-3 rounded-2xl p-3 transition ${
+                dropTarget === "none" ? "bg-violet-100/70 ring-2 ring-violet-400 dark:bg-violet-950/40" : ""
+              }`}
+              onDragOver={(event) => onFolderDragOver(event, "none")}
+              onDragLeave={() => setDropTarget((current) => (current === "none" ? null : current))}
+              onDrop={(event) => onFolderDrop(event, null)}
+            >
+              <h2 className="text-lg font-semibold">Senza cartella</h2>
+              {(folders.length === 0 ? bandi : ungrouped).length === 0 ? (
+                <p className="text-sm text-muted-foreground">Trascina qui un bando per toglierlo dalla cartella.</p>
+              ) : (
+                renderCards(ungrouped)
+              )}
             </section>
+          )}
+          {folders.length === 0 && bandi.length > 0 && (
+            <section className="space-y-3">{renderCards(bandi)}</section>
           )}
         </div>
       )}
