@@ -17,9 +17,23 @@ const TAGS = [
 
 export default function HomePage() {
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-slate-50 text-slate-900 dark:bg-transparent dark:text-slate-100">
+    <div className="relative flex min-h-screen flex-col overflow-hidden text-slate-900 dark:text-slate-100">
+      <Image
+        src="/landing-emotion.jpg"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="!fixed inset-0 h-dvh w-screen object-cover object-center"
+      />
+      <div
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/25 via-white/10 to-slate-950/20 dark:from-[#070212]/45 dark:via-[#070212]/30 dark:to-[#070212]/65"
+        aria-hidden
+      />
       <div className="absolute right-3 top-3 z-20 sm:right-5 sm:top-5">
-        <ThemeToggle />
+        <div className="rounded-full bg-white/80 shadow-sm backdrop-blur-md dark:bg-black/45">
+          <ThemeToggle />
+        </div>
       </div>
 
       <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-16 sm:px-6">
@@ -27,26 +41,21 @@ export default function HomePage() {
 
         <div className="w-full max-w-xl p-[1px] sm:max-w-2xl">
           <div className="rounded-[28px] bg-gradient-to-br from-cyan-400/35 via-violet-500/30 to-fuchsia-500/35 p-[1px] shadow-[0_0_60px_-12px_rgba(139,92,246,0.45)] dark:from-cyan-400/35">
-            <div className="rounded-[27px] border border-slate-200/90 bg-white/95 px-6 py-8 shadow-inner backdrop-blur-2xl dark:border-white/10 dark:bg-[#0b0614]/75 sm:px-10 sm:py-10">
-              <h1 className="text-center text-2xl font-bold leading-tight tracking-tight text-slate-900 sm:text-3xl md:text-4xl dark:text-white">
+            <div className="rounded-[27px] border border-slate-200/80 bg-white/88 px-6 py-8 shadow-inner backdrop-blur-xl dark:border-white/10 dark:bg-[#0b0614]/78 sm:px-10 sm:py-10">
+              <p className="text-center text-3xl font-bold tracking-tight sm:text-4xl">
+                <span className="bg-gradient-to-r from-cyan-700 to-violet-800 bg-clip-text text-transparent dark:from-cyan-200 dark:to-violet-200">
+                  Bandi AI Assistant
+                </span>
+              </p>
+              <h1 className="mt-3 text-center text-2xl font-bold leading-tight tracking-tight text-slate-900 sm:text-3xl dark:text-white">
                 Analisi completa di un bando.
                 <span className="mt-1 block bg-gradient-to-r from-cyan-700 to-violet-800 bg-clip-text text-transparent dark:from-cyan-200 dark:to-violet-200">
                   In secondi, non in ore.
                 </span>
               </h1>
-              <p className="mt-4 text-center text-sm text-slate-600 sm:text-base dark:text-violet-100/75">
-                Upload documenti · Verifica visura · Analisi strutturata · Chat AI contestuale · Export calendario
+              <p className="mt-4 text-center text-sm leading-relaxed text-slate-600 sm:text-base dark:text-violet-100/80">
+                Smetti di scorrere decine di pagine. Carica il fascicolo e la visura: in un attimo hai una lettura nitida, da controllare e da portare avanti.
               </p>
-              <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200/80 shadow-sm dark:border-white/10">
-                <Image
-                  src="/landing-emotion.jpg"
-                  alt="Una persona mette ordine tra i documenti di un bando, alla luce di una lampada"
-                  width={1280}
-                  height={720}
-                  priority
-                  className="h-52 w-full object-cover sm:h-64"
-                />
-              </div>
 
               <p className="mt-5 text-center text-sm leading-relaxed text-slate-700 dark:text-violet-100/85">
                 <strong>Free</strong>: fino a {PLANS.free.analysesPerMonth} analisi al mese e{" "}
@@ -114,7 +123,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="relative z-10 border-t border-slate-200/90 bg-white/85 text-slate-700 backdrop-blur-md dark:border-white/10 dark:bg-black/35 dark:text-violet-200/85 [&_a]:text-violet-700 dark:[&_a]:text-violet-200/90 [&_a]:hover:text-slate-900 dark:[&_a]:hover:text-white [&_span]:text-slate-600 dark:[&_span]:text-violet-300/80">
+      <div className="relative z-10 border-t border-white/40 bg-white/75 text-slate-700 backdrop-blur-md dark:border-white/10 dark:bg-black/40 dark:text-violet-200/85 [&_a]:text-violet-700 dark:[&_a]:text-violet-200/90 [&_a]:hover:text-slate-900 dark:[&_a]:hover:text-white [&_span]:text-slate-600 dark:[&_span]:text-violet-300/80">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.15em] text-slate-800 sm:text-sm dark:text-violet-100/95">
             <span className="h-2 w-2 rounded-full bg-cyan-500 shadow-[0_0_12px_#22d3ee] dark:bg-cyan-400" aria-hidden />
