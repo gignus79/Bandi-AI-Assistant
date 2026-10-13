@@ -149,7 +149,7 @@ export function ChatPanel({
           <div className="space-y-4">
             <p className="text-center text-sm text-muted-foreground">
               Bandi: <span className="font-medium text-foreground">{bandoTitle}</span>. Scrivi un messaggio o scegli una
-              domanda veloce. La chat è persistente e usa i documenti e le analisi già caricati.
+              domanda veloce. La chat legge tutti i documenti caricati su questo bando.
             </p>
             <div className="flex flex-wrap justify-center gap-2">
               {QUICK_QUESTIONS.map((q) => (

@@ -5,7 +5,7 @@ import { requireAiConsent } from "@/lib/consent";
 import { db } from "@/lib/db";
 import { bandi, documents, analyses, chatMessages } from "@/lib/db/schema";
 import { chatWithLLM } from "@/lib/llm/client";
-import { partitionDocuments } from "@/lib/documents/roles";
+import { packAllChatDocuments } from "@/lib/llm/chat-context";
 import { CHAT_SYSTEM_PROMPT, buildChatContextPrompt } from "@/lib/llm/prompts";
 import { getPlanForUser } from "@/lib/subscription";
 import {
@@ -77,25 +77,15 @@ export async function POST(req: NextRequest) {
         sourceType: documents.sourceType,
       })
       .from(documents)
-      .where(eq(documents.bandoId, bandoId));
-    const grouped = partitionDocuments(docs);
+      .where(eq(documents.bandoId, bandoId))
+      .orderBy(asc(documents.createdAt));
     const analysesRows = await db
       .select({ summary: analyses.summary, rawContent: analyses.rawContent })
       .from(analyses)
       .where(eq(analyses.bandoId, bandoId))
       .orderBy(analyses.createdAt)
       .limit(3);
-    const formatDocs = (rows: { fileName: string; content: string }[], label: string) =>
-      rows.length === 0
-        ? `(Nessun documento: ${label})`
-        : rows
-            .slice(0, 6)
-            .map((doc) => `### ${doc.fileName}\n${doc.content.slice(0, 2500)}`)
-            .join("\n\n---\n\n");
-    const documentsSummary = [
-      `Documenti del bando:\n${formatDocs(grouped.bando, "bando")}`,
-      `Documenti di profilo (visura e contesto):\n${formatDocs(grouped.context, "profilo")}`,
-    ].join("\n\n");
+    const documentsSummary = packAllChatDocuments(docs);
     const lastAnalysesSummary = analysesRows
       .map((a) => (a.rawContent || a.summary).slice(0, 2000))
       .join("\n\n---\n\n");
