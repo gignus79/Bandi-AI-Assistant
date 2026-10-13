@@ -11,7 +11,7 @@
 [![Vercel](https://img.shields.io/badge/Vercel-deploy-000000?logo=vercel&logoColor=white)](https://vercel.com/)
 [![License](https://img.shields.io/badge/License-Proprietary-8b5cf6)](./LICENSE)
 
-Applicazione **Next.js** per professionisti e organizzazioni che devono leggere bandi complessi: carica i documenti del bando e, se serve, la visura del soggetto, ottieni **analisi strutturate** (requisiti, scadenze, criteri), una **verifica di aderenza** e **chat contestuale**. Include autenticazione, piani di utilizzo e abbonamenti.
+Applicazione **Next.js** per professionisti e organizzazioni che devono leggere bandi complessi: carica i documenti del bando e, se serve, la visura del soggetto, ottieni **analisi strutturate** (requisiti, scadenze, criteri), una **verifica di aderenza** e **chat contestuale**. I bandi si raggruppano in cartelle. Include autenticazione, consenso all’uso dei modelli, piani di utilizzo e abbonamenti.
 
 **MediaMatter** · Giorgio Lovecchio
 
@@ -21,12 +21,15 @@ Applicazione **Next.js** per professionisti e organizzazioni che devono leggere 
 
 | Area | Contenuto |
 |------|-----------|
-| **Ingestione** | PDF, DOCX, fogli di calcolo, testo, immagini |
-| **Analisi** | Sintesi, requisiti, scadenze, suggerimenti tramite modelli OpenAI / Anthropic |
+| **Ingestione** | PDF, DOCX, fogli di calcolo, testo, immagini (bando, profilo/visura, moduli) |
+| **Organizzazione** | Cartelle, rinomina, trascinamento dei bandi, cancellazione dalla dashboard |
+| **Analisi** | Sintesi, requisiti, scadenze, criteri; verbosità della risposta a scelta |
 | **Aderenza** | Confronto tra visura (e altri documenti di profilo) e requisiti del bando |
-| **Chat** | Assistente sul singolo bando, rendering Markdown con formattazione curata |
-| **Export** | Markdown, PDF, calendario (.ics) |
-| **Business** | Clerk (auth), Stripe (checkout abbonamenti), limiti d’uso e piani |
+| **Moduli** | Compilazione di un modulo a partire dai documenti già caricati |
+| **Suggerimenti** | Insight e grafici solo con i numeri presenti nei documenti |
+| **Chat** | Assistente sul singolo bando, su tutti gli allegati; export della chat in PDF e DOCX |
+| **Export** | Markdown, PDF, DOCX e calendario (.ics) di analisi e scadenze |
+| **Business** | Clerk (auth), consenso AI, Stripe (checkout abbonamenti), limiti d’uso e piani |
 
 ---
 
@@ -38,7 +41,7 @@ Applicazione **Next.js** per professionisti e organizzazioni che devono leggere 
 | **Auth** | Clerk (sessioni, OAuth, middleware) |
 | **Dati** | PostgreSQL, Drizzle ORM |
 | **Pagamenti** | Stripe Billing (Checkout, webhook) |
-| **AI** | OpenAI API, Anthropic API (analisi e chat) |
+| **AI** | Anthropic Claude Opus 5.5 (default, `ANTHROPIC_MODEL`), OpenAI come fallback |
 | **Test** | Vitest (unit), ESLint |
 
 ---
@@ -100,7 +103,7 @@ Applicazione **Next.js** per professionisti e organizzazioni che devono leggere 
 
 - Non versionare `.env`, `.env.local` né chiavi API. Template: `.env.example`.
 - **Clerk**: chiavi `pk_test_` / `sk_test_` in sviluppo; `pk_live_` / `sk_live_` in produzione. Allineare `NEXT_PUBLIC_APP_URL` e domini nella dashboard Clerk.
-- **Stripe**: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` solo server-side; il webhook verifica la firma delle richieste.
+- **Stripe**: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` solo server-side; il webhook verifica la firma delle richieste. Il checkout accetta solo i prezzi Pro e Unlimited e indirizzi di ritorno sullo stesso sito.
 - **Clerk webhooks**: endpoint `POST /api/webhooks/clerk`, variabile `CLERK_WEBHOOK_SIGNING_SECRET` (signing secret della dashboard). L’URL in Clerk deve coincidere con il dominio pubblico dell’app.
 - **LLM**: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` solo su variabili server.
 - **Database**: connessione TLS (`sslmode=require` dove richiesto), accesso ristretto per ambiente.
@@ -129,8 +132,7 @@ I test unitari coprono helper (URL, Markdown, identità app). E2E e integrazione
 
 ## Documentazione aggiuntiva
 
-- `docs/` — note interne (conformità, sicurezza).
-- Privacy e Cookie policy nell’app.
+Privacy, cookie, cancellazione dati e resi sono pagine dell’app (`/privacy`, `/cookie-policy`, `/cancellazione-dati`, `/resi-rimborsi`).
 
 ---
 
